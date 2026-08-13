@@ -3,7 +3,7 @@ import { AIBrief } from '../types';
 export const MOCK_BRIEFS: Record<string, AIBrief> = {
   'cust-01': {
     customerId: 'cust-01',
-    summary: '김민준 님은 글로벌 출장이 잦은 Wine 등급 VIP로, 시그니처 코냑 비세토스 및 가벼운 트래블 백팩 라인을 선호합니다. 최근 유럽 출장을 앞두고 신상 모빌리티 컬렉션과 클리닝 케어를 위해 방문하셨습니다.',
+    summary: '김민준 님은 글로벌 출장이 잦은 VIP 고객으로, 시그니처 코냑 비세토스 및 가벼운 트래블 백팩 라인을 선호합니다. 최근 유럽 출장을 앞두고 신상 모빌리티 컬렉션과 클리닝 케어를 위해 방문하셨습니다.',
     suggestedApproach: '혼잡한 시간대를 피하는 프라이빗 룸 안내와 함께 샴페인 음료 서비스를 먼저 제공해 보세요. 지나친 세일즈보다 비세토스 백팩의 기내 수납력과 가죽 케어 솔루션을 중심으로 상담을 진행해 보시는 것을 권장합니다.',
     basis: [
       '최근 방문(2026-08-10): 가을 신상 사전 프리뷰 및 출장 일정 공유',
@@ -26,7 +26,7 @@ export const MOCK_BRIEFS: Record<string, AIBrief> = {
   },
   'cust-02': {
     customerId: 'cust-02',
-    summary: 'Sarah Jenkins 님은 디지털 노마드 라이프스타일을 즐기는 Black 등급 고객입니다. 싱가포르 매장 방문 이력이 있으며 맥북/태블릿 수납용 슬림 파우치 및 오거나이저에 관심이 높습니다.',
+    summary: 'Sarah Jenkins 님은 디지털 노마드 라이프스타일을 즐기는 일반 고객입니다. 싱가포르 매장 방문 이력이 있으며 맥북/태블릿 수납용 슬림 파우치 및 오거나이저에 관심이 높습니다.',
     suggestedApproach: '영문 응대 브리핑 준비 및 맥북 14인치 슬림 파우치 재고 현황을 우선 안내해 보세요. 스트리트 럭셔리 감성의 블랙 모노그램 컬렉션을 비교 시연하는 접근을 추천합니다.',
     basis: [
       '상담 기록(2026-08-01): 맥북 수납 슬림 파우치 문의',
@@ -46,7 +46,7 @@ export const MOCK_BRIEFS: Record<string, AIBrief> = {
   },
   'cust-03': {
     customerId: 'cust-03',
-    summary: '이지우 님은 신규 등록된 Green 등급 VIP로, 생일 파티를 앞두고 샴페인 골드 톤의 크로스바디 미니백을 탐색 중입니다.',
+    summary: '이지우 님은 신규 등록된 일반 고객으로, 생일 파티를 앞두고 샴페인 골드 톤의 크로스바디 미니백을 탐색 중입니다.',
     suggestedApproach: '첫 여정 방문을 환영하는 브랜드 소개와 함께 MCM Private Circle의 스탬프 혜택 및 무료 케어 서비스를 친절하게 설명해 보세요. 파티 포인트 백인 밀레나 체인 크로스바디 착용을 권유해 보시는 것을 권장합니다.',
     basis: [
       '방문 스탬프(2026-08-11): 안양 롯데 백화점 최초 방문',
@@ -65,7 +65,7 @@ export const MOCK_BRIEFS: Record<string, AIBrief> = {
   },
   'cust-04': {
     customerId: 'cust-04',
-    summary: 'Kenji Sato 님은 글로벌 트래블러 Wine 등급 고객으로, 비행 시 기내용 트래블 위켄더 및 여권 오거나이저 세트를 전담 관리받고 있습니다.',
+    summary: 'Kenji Sato 님은 글로벌 트래블러 VIP 고객으로, 비행 시 기내용 트래블 위켄더 및 여권 오거나이저 세트를 전담 관리받고 있습니다.',
     suggestedApproach: '일본어 안내 가능 CA와의 연결을 타진해 보세요. 결제 시 신속한 Tax-Free 서류 처리 준비 및 아렌 비세토스 트래블 위켄더 코냑 라인을 우선 큐레이션해 보는 것을 추천합니다.',
     basis: [
       '구매 이력: 아렌 비세토스 트래블 위켄더 Cognac (2026-06-30)',

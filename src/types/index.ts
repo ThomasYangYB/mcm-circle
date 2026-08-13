@@ -1,4 +1,4 @@
-export type MembershipTier = 'Green' | 'Black' | 'Wine';
+export type MembershipTier = 'VIP' | '일반 고객';
 
 export interface JourneyStamp {
   id: string;
