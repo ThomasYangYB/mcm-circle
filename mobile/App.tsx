@@ -91,6 +91,18 @@ const STORE_STAMP_IMAGES: Record<string, number> = {
 };
 const STORE_NAMES = Object.keys(STORE_STAMP_IMAGES) as StoreName[];
 
+// 이전 데모 데이터와 새 지점명 사이의 연결표. 이미 저장된 고객 여정도 지점별 도장을 잃지 않는다.
+const LEGACY_STORE_NAMES: Record<string, StoreName> = {
+  "청담 플래그십 스토어": "MCM 하우스 플래그십스토어",
+  "MCM 청담 플래그십": "MCM 하우스 플래그십스토어",
+  "신세계 백화점 강남점": "MCM 신세계면세점 명동점",
+  "안양 롯데 백화점": "MCM 롯데백화점 잠실점",
+  "MCM 도쿄 긴자점": "MCM 롯데백화점 본점",
+  "MCM 싱가포르 마리나베이": "MCM 제주 롯데면세점",
+};
+const getStampAsset = (storeName: string) =>
+  STORE_STAMP_IMAGES[storeName] ?? STORE_STAMP_IMAGES[LEGACY_STORE_NAMES[storeName]];
+
 function Provider({ children }: { children: React.ReactNode }) {
   const [role, setRoleState] = useState<UserRole>("customer");
   const [isLoggedIn, setLoggedIn] = useState(false);
@@ -111,7 +123,19 @@ function Provider({ children }: { children: React.ReactNode }) {
   );
   useEffect(() => {
     AsyncStorage.getItem(storageKey)
-      .then((v) => v && setCustomers(JSON.parse(v)))
+      .then((v) => {
+        if (!v) return;
+        const savedCustomers = JSON.parse(v) as Customer[];
+        setCustomers(
+          savedCustomers.map((customer) => ({
+            ...customer,
+            stamps: customer.stamps.map((stamp) => ({
+              ...stamp,
+              storeName: LEGACY_STORE_NAMES[stamp.storeName] ?? stamp.storeName,
+            })),
+          })),
+        );
+      })
       .catch(() => undefined);
   }, []);
   useEffect(() => {
@@ -628,7 +652,7 @@ function SectionTitle({
   );
 }
 function StampCard({ item }: { item: JourneyStamp }) {
-  const asset = STORE_STAMP_IMAGES[item.storeName];
+  const asset = getStampAsset(item.storeName);
   return (
     <View style={s.stampPreview}>
       {asset ? (
@@ -771,7 +795,7 @@ function Journey() {
       {tab === "stamps" ? (
         <View style={s.journeyTimeline}>
           {customer.stamps.map((x) => {
-            const asset = STORE_STAMP_IMAGES[x.storeName];
+            const asset = getStampAsset(x.storeName);
             return (
               <View key={x.id} style={s.journeyStop}>
                 <View style={s.journeyRail} />
@@ -917,7 +941,7 @@ function Saved() {
 }
 
 function CaHome() {
-  const { customers, select, setRole, logout, currentStore, setCurrentStore } =
+  const { customers, select, logout, currentStore, setCurrentStore } =
     useApp();
   const n = useNavigation<any>();
   const { isTablet } = useResponsive();
@@ -1009,9 +1033,6 @@ function CaHome() {
           <View style={s.caMain}>{actions}</View>
           <View style={s.caSide}>
             {clientList}
-            <Button secondary onPress={() => setRole("customer")}>
-              고객 앱으로 전환
-            </Button>
             <Pressable
               accessibilityRole="button"
               onPress={logout}
@@ -1026,9 +1047,6 @@ function CaHome() {
         <>
           {actions}
           {clientList}
-          <Button secondary onPress={() => setRole("customer")}>
-            고객 앱으로 전환
-          </Button>
           <Pressable
             accessibilityRole="button"
             onPress={logout}
