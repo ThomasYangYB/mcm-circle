@@ -14,6 +14,7 @@ export interface PurchaseRecord {
   variant: string;
   price: number;
   purchasedAt: string;
+  storeName?: string;
   imageUrl?: string;
 }
 
@@ -22,6 +23,7 @@ export interface CareRecord {
   type: string;
   note: string;
   date: string;
+  storeName?: string;
 }
 
 export interface ConsultationNote {

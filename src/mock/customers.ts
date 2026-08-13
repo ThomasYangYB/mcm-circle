@@ -51,6 +51,7 @@ export const MOCK_CUSTOMERS: Customer[] = [
         variant: 'Cognac / Medium',
         price: 1090000,
         purchasedAt: '2026-07-22',
+        storeName: 'MCM 롯데백화점 잠실점',
         imageUrl: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=400&q=80'
       },
       {
@@ -59,6 +60,7 @@ export const MOCK_CUSTOMERS: Customer[] = [
         variant: 'Cognac / Small',
         price: 1750000,
         purchasedAt: '2026-05-18',
+        storeName: 'MCM 롯데백화점 본점',
         imageUrl: 'https://images.unsplash.com/photo-1581553680321-4fffae59febd?auto=format&fit=crop&w=400&q=80'
       }
     ],
@@ -67,7 +69,8 @@ export const MOCK_CUSTOMERS: Customer[] = [
         id: 'care-01',
         type: '가죽 클리닝 & 모서리 보강',
         note: '클라라 토트 모서리 마모 보강 완료 (보증 기간 적용)',
-        date: '2026-03-05'
+        date: '2026-03-05',
+        storeName: 'MCM 신라면세점 서울점'
       }
     ],
     consultations: [
@@ -120,6 +123,7 @@ export const MOCK_CUSTOMERS: Customer[] = [
         variant: 'Black Leather',
         price: 620000,
         purchasedAt: '2026-04-10',
+        storeName: 'MCM 제주 롯데면세점',
         imageUrl: 'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=400&q=80'
       }
     ],
@@ -192,6 +196,7 @@ export const MOCK_CUSTOMERS: Customer[] = [
         variant: 'Cognac / Medium',
         price: 1890000,
         purchasedAt: '2026-06-30',
+        storeName: 'MCM 하우스 플래그십스토어',
         imageUrl: 'https://images.unsplash.com/photo-1565084888279-aca607ecce0c?auto=format&fit=crop&w=400&q=80'
       }
     ],
