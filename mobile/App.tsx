@@ -53,6 +53,7 @@ import type { Customer, JourneyStamp, UserRole } from "../src/types";
 import { colors as c } from "./theme";
 
 type AuthScreen = "login" | "signup";
+type StoreName = keyof typeof STORE_STAMP_IMAGES;
 type AppState = {
   role: UserRole;
   setRole: (v: UserRole) => void;
@@ -64,6 +65,8 @@ type AppState = {
   customer: Customer;
   select: (id: string) => void;
   toggleProduct: (id: string) => void;
+  currentStore: StoreName;
+  setCurrentStore: (store: StoreName) => void;
   addStamp: (id: string, type: JourneyStamp["type"]) => void;
 };
 const Ctx = createContext<AppState | null>(null);
@@ -86,6 +89,7 @@ const STORE_STAMP_IMAGES: Record<string, number> = {
   "MCM 제주 신라면세점": require("../stores/journey-stamp-jeju-shilla-duty-free-96.png"),
   "MCM 제주 롯데면세점": require("../stores/journey-stamp-jeju-lotte-duty-free-96.png"),
 };
+const STORE_NAMES = Object.keys(STORE_STAMP_IMAGES) as StoreName[];
 
 function Provider({ children }: { children: React.ReactNode }) {
   const [role, setRoleState] = useState<UserRole>("customer");
@@ -102,6 +106,9 @@ function Provider({ children }: { children: React.ReactNode }) {
   };
   const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
   const [selected, select] = useState("cust-01");
+  const [currentStore, setCurrentStore] = useState<StoreName>(
+    "MCM 하우스 플래그십스토어",
+  );
   useEffect(() => {
     AsyncStorage.getItem(storageKey)
       .then((v) => v && setCustomers(JSON.parse(v)))
@@ -122,6 +129,8 @@ function Provider({ children }: { children: React.ReactNode }) {
       customers,
       customer,
       select,
+      currentStore,
+      setCurrentStore,
       toggleProduct: (id: string) =>
         setCustomers((all) =>
           all.map((x) =>
@@ -147,7 +156,7 @@ function Provider({ children }: { children: React.ReactNode }) {
                     {
                       id: `stamp-${Date.now()}`,
                       type,
-                      storeName: "MCM 청담 플래그십",
+                      storeName: currentStore,
                       issuedAt: new Date().toISOString(),
                       issuedByCA: "이현우 CA",
                     },
@@ -157,7 +166,7 @@ function Provider({ children }: { children: React.ReactNode }) {
           ),
         ),
     }),
-    [role, isLoggedIn, authScreen, customers, selected],
+    [role, isLoggedIn, authScreen, customers, selected, currentStore],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
@@ -336,11 +345,13 @@ function Login() {
               </Text>
             </Pressable>
           </View>
-          <Text style={s.body}>
-            {isCustomer
-              ? "MCM Private Circle 고객 계정으로 로그인하세요."
-              : "매장 담당자 전용 로그인입니다."}
-          </Text>
+          <View style={s.loginIntro}>
+            <Text style={s.body}>
+              {isCustomer
+                ? "MCM Private Circle 고객 계정으로 로그인하세요."
+                : "매장 담당자 전용 로그인입니다."}
+            </Text>
+          </View>
           <Text style={s.label}>
             {isCustomer ? "이메일 또는 휴대폰 번호" : "담당 CA 사번"}
           </Text>
@@ -906,7 +917,8 @@ function Saved() {
 }
 
 function CaHome() {
-  const { customers, select, setRole, logout } = useApp();
+  const { customers, select, setRole, logout, currentStore, setCurrentStore } =
+    useApp();
   const n = useNavigation<any>();
   const { isTablet } = useResponsive();
   const clientList = (
@@ -946,6 +958,28 @@ function CaHome() {
         <Text style={s.darkBody}>
           고객의 맥락을 먼저 확인하고 자연스럽게 응대하세요.
         </Text>
+      </Card>
+      <Card>
+        <Text style={s.kicker}>CURRENT STORE</Text>
+        <Text style={s.cardTitle}>현재 근무 지점</Text>
+        <Text style={s.body}>선택한 지점의 고유 도장이 고객 여권에 발급됩니다.</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.storePicker}>
+          {STORE_NAMES.map((store) => {
+            const selectedStore = store === currentStore;
+            return (
+              <Pressable
+                key={store}
+                onPress={() => setCurrentStore(store)}
+                style={[s.storeOption, selectedStore && s.storeOptionActive]}
+              >
+                <Image source={STORE_STAMP_IMAGES[store]} style={s.storeOptionStamp} />
+                <Text numberOfLines={2} style={[s.storeOptionText, selectedStore && s.storeOptionTextActive]}>
+                  {store.replace("MCM ", "")}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
       </Card>
       <View style={s.grid}>
         <Quick
@@ -1209,7 +1243,7 @@ function Consultation() {
   );
 }
 function IssueStamp() {
-  const { customer, addStamp } = useApp();
+  const { customer, addStamp, currentStore } = useApp();
   const n = useNavigation<any>();
   return (
     <Screen title="방문 스탬프 발급" back>
@@ -1217,6 +1251,14 @@ function IssueStamp() {
         <Text style={s.darkKicker}>ISSUE JOURNEY STAMP</Text>
         <Text style={s.passportName}>{customer.name} 님</Text>
       </Card>
+      <View style={s.issueStoreRow}>
+        <Image source={STORE_STAMP_IMAGES[currentStore]} style={s.issueStoreStamp} />
+        <View style={{ flex: 1 }}>
+          <Text style={s.kicker}>ISSUING FROM</Text>
+          <Text style={s.cardTitle}>{currentStore}</Text>
+          <Text style={s.body}>이 지점의 도장으로 발급됩니다.</Text>
+        </View>
+      </View>
       <Text style={s.body}>발급할 여정 유형을 선택하세요.</Text>
       {(["visit", "purchase", "care"] as const).map((type) => (
         <Button
@@ -1439,25 +1481,26 @@ const s = StyleSheet.create({
   loginForm: {
     flexGrow: 1,
     backgroundColor: c.paper,
-    paddingVertical: 24,
-    gap: 14,
+    paddingVertical: 38,
+    gap: 20,
   },
   loginFormTablet: {
     flex: 0.58,
     justifyContent: "center",
-    paddingVertical: 48,
+    paddingVertical: 58,
   },
   loginFormInner: {
     width: "100%",
     maxWidth: 560,
     alignSelf: "center",
-    gap: 14,
+    gap: 20,
   },
   authTopRow: {
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
   },
+  loginIntro: { marginBottom: 6 },
   roleSwitch: {
     minWidth: 58,
     height: 44,
@@ -1476,7 +1519,7 @@ const s = StyleSheet.create({
   signupLink: {
     flexDirection: "row",
     justifyContent: "center",
-    paddingVertical: 8,
+    paddingVertical: 12,
   },
   signupText: { color: c.muted, fontSize: 13 },
   signupLinkText: { color: c.gold, fontSize: 13, fontWeight: "800" },
@@ -1710,12 +1753,13 @@ const s = StyleSheet.create({
     gap: 16,
   },
   textInput: {
-    minHeight: 50,
+    minHeight: 54,
     borderWidth: 1,
     borderColor: c.line,
     borderRadius: 8,
     backgroundColor: c.paper,
-    padding: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 14,
     color: c.ink,
   },
@@ -1732,4 +1776,12 @@ const s = StyleSheet.create({
   recordList: { gap: 14 },
   recordImage: { width: 72, height: 72, borderRadius: 8, backgroundColor: c.cloud },
   recordMeta: { flexDirection: "row", alignItems: "center", gap: 7, borderTopWidth: 1, borderColor: c.line, paddingTop: 12, marginTop: 4 },
+  storePicker: { gap: 10, paddingTop: 4 },
+  storeOption: { width: 110, minHeight: 132, alignItems: "center", justifyContent: "center", gap: 7, padding: 10, borderWidth: 1, borderColor: c.line, borderRadius: 10, backgroundColor: "#FCFAF7" },
+  storeOptionActive: { borderColor: c.gold, backgroundColor: "#F7EFD9" },
+  storeOptionStamp: { width: 60, height: 60 },
+  storeOptionText: { color: c.muted, fontSize: 10, fontWeight: "700", textAlign: "center", lineHeight: 14 },
+  storeOptionTextActive: { color: c.ink },
+  issueStoreRow: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderWidth: 1, borderColor: c.line, borderRadius: 10, backgroundColor: "#FCFAF7" },
+  issueStoreStamp: { width: 76, height: 76 },
 });
