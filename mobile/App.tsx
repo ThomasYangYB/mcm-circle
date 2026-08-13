@@ -25,7 +25,6 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { useFonts } from "expo-font";
 import {
   Award,
   BookOpen,
@@ -1368,22 +1367,6 @@ function Root() {
 }
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [fontsLoaded] = useFonts({
-    Pretendard: require("pretendard/dist/public/static/Pretendard-Regular.otf"),
-    "Pretendard-SemiBold": require("pretendard/dist/public/static/Pretendard-SemiBold.otf"),
-    "Pretendard-Bold": require("pretendard/dist/public/static/Pretendard-Bold.otf"),
-  });
-  useEffect(() => {
-    (Text as any).defaultProps = {
-      ...((Text as any).defaultProps ?? {}),
-      style: { fontFamily: "Pretendard" },
-    };
-    (TextInput as any).defaultProps = {
-      ...((TextInput as any).defaultProps ?? {}),
-      style: { fontFamily: "Pretendard" },
-    };
-  }, []);
-  if (!fontsLoaded) return null;
   return (
     <SafeAreaProvider>
       {showSplash ? (
