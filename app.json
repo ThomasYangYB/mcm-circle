@@ -5,6 +5,11 @@
     "version": "1.0.0",
     "orientation": "default",
     "userInterfaceStyle": "light",
-    "android": { "package": "com.mcm.privatecircle" }
+    "android": {
+      "package": "com.mcm.privatecircle"
+    },
+    "plugins": [
+      "expo-font"
+    ]
   }
 }

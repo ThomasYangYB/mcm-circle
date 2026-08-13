@@ -17,28 +17,28 @@ export const MOCK_CUSTOMERS: Customer[] = [
     stamps: [
       {
         id: 'stamp-01',
-        storeName: '청담 플래그십 스토어',
+        storeName: 'MCM 하우스 플래그십스토어',
         type: 'visit',
         issuedAt: '2026-08-10T14:30:00Z',
         issuedByCA: 'CA 이현우'
       },
       {
         id: 'stamp-02',
-        storeName: '신세계 백화점 강남점',
+        storeName: 'MCM 롯데백화점 잠실점',
         type: 'purchase',
         issuedAt: '2026-07-22T16:15:00Z',
         issuedByCA: 'CA 박서연'
       },
       {
         id: 'stamp-03',
-        storeName: 'MCM 도쿄 긴자점',
+        storeName: 'MCM 롯데백화점 본점',
         type: 'visit',
         issuedAt: '2026-05-18T11:00:00Z',
         issuedByCA: 'CA Sato Tanaka'
       },
       {
         id: 'stamp-04',
-        storeName: '안양 롯데 백화점',
+        storeName: 'MCM 신라면세점 서울점',
         type: 'care',
         issuedAt: '2026-03-05T15:40:00Z',
         issuedByCA: 'CA 최지은'
@@ -47,17 +47,17 @@ export const MOCK_CUSTOMERS: Customer[] = [
     purchases: [
       {
         id: 'pur-01',
-        productName: '클라라 모노그램 레더 토트',
-        variant: 'Black / Large',
-        price: 1480000,
+        productName: 'Aren 비세토스 메신저 백',
+        variant: 'Cognac / Medium',
+        price: 1090000,
         purchasedAt: '2026-07-22',
         imageUrl: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=400&q=80'
       },
       {
         id: 'pur-02',
-        productName: '헤리티지 비세토스 캐리어 55',
-        variant: 'Champagne / Cabin Size',
-        price: 2450000,
+        productName: 'Ottomar 비세토스 위켄더',
+        variant: 'Cognac / Small',
+        price: 1750000,
         purchasedAt: '2026-05-18',
         imageUrl: 'https://images.unsplash.com/photo-1581553680321-4fffae59febd?auto=format&fit=crop&w=400&q=80'
       }
@@ -100,14 +100,14 @@ export const MOCK_CUSTOMERS: Customer[] = [
     stamps: [
       {
         id: 'stamp-05',
-        storeName: '청담 플래그십 스토어',
+        storeName: 'MCM 하우스 플래그십스토어',
         type: 'visit',
         issuedAt: '2026-08-01T13:20:00Z',
         issuedByCA: 'CA 이현우'
       },
       {
         id: 'stamp-06',
-        storeName: 'MCM 싱가포르 마리나베이',
+        storeName: 'MCM 제주 롯데면세점',
         type: 'purchase',
         issuedAt: '2026-04-10T17:00:00Z',
         issuedByCA: 'CA Alex Tan'
@@ -152,7 +152,7 @@ export const MOCK_CUSTOMERS: Customer[] = [
     stamps: [
       {
         id: 'stamp-07',
-        storeName: '안양 롯데 백화점',
+        storeName: 'MCM 현대면세점 무역센터점',
         type: 'visit',
         issuedAt: '2026-08-11T16:00:00Z',
         issuedByCA: 'CA 최지은'
@@ -179,7 +179,7 @@ export const MOCK_CUSTOMERS: Customer[] = [
     stamps: [
       {
         id: 'stamp-08',
-        storeName: '청담 플래그십 스토어',
+        storeName: 'MCM 하우스 플래그십스토어',
         type: 'purchase',
         issuedAt: '2026-06-30T15:20:00Z',
         issuedByCA: 'CA 박서연'
@@ -188,8 +188,8 @@ export const MOCK_CUSTOMERS: Customer[] = [
     purchases: [
       {
         id: 'pur-04',
-        productName: '아렌 비세토스 트래블 위켄더',
-        variant: 'Cognac / Large',
+        productName: 'M Stark 비세토스 백팩',
+        variant: 'Cognac / Medium',
         price: 1890000,
         purchasedAt: '2026-06-30',
         imageUrl: 'https://images.unsplash.com/photo-1565084888279-aca607ecce0c?auto=format&fit=crop&w=400&q=80'
