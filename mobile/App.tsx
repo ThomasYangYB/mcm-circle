@@ -1548,7 +1548,7 @@ const s = StyleSheet.create({
     borderColor: c.line,
     paddingBottom: 14,
   },
-  homeBrandRow: { marginTop: -16, marginLeft: -14, marginBottom: -14, paddingBottom: 6 },
+  homeBrandRow: { marginTop: -21, marginLeft: -20, marginBottom: -20, paddingBottom: 1 },
   homeLogoPlate: { width: 258, height: 96, position: "relative" },
   homeLogo: { width: 258, height: 96 },
   homeLogoShadow: { position: "absolute", width: 258, height: 96, tintColor: c.ink, opacity: 0.78, transform: [{ translateX: 1.5 }, { translateY: 1.5 }] },
