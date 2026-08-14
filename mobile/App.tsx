@@ -1443,7 +1443,7 @@ const s = StyleSheet.create({
   loginDark: { height: 348, flexGrow: 0, flexShrink: 0, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 26, backgroundColor: c.ink },
   loginDarkTablet: { flex: 0.42, height: undefined, padding: 48 },
   loginInner: { flex: 1, maxWidth: 460, alignSelf: "center", width: "100%", justifyContent: "flex-start" },
-  loginLogo: { width: 290, height: 110, alignSelf: "flex-start", marginLeft: -18, marginTop: 7 },
+  loginLogo: { width: 308, height: 117, alignSelf: "flex-start", marginLeft: -18, marginTop: 7 },
   loginHeroSpacer: { height: 28 },
   loginForm: {
     flexGrow: 1,
