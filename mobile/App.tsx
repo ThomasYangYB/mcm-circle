@@ -1548,7 +1548,7 @@ const s = StyleSheet.create({
     borderColor: c.line,
     paddingBottom: 14,
   },
-  homeBrandRow: { marginTop: -21, marginLeft: -20, marginBottom: -20, paddingBottom: 1 },
+  homeBrandRow: { marginTop: -21, marginLeft: -20, marginBottom: 7, paddingBottom: 1 },
   homeLogoPlate: { width: 258, height: 96, position: "relative" },
   homeLogo: { width: 258, height: 96 },
   homeLogoShadow: { position: "absolute", width: 258, height: 96, tintColor: c.ink, opacity: 0.78, transform: [{ translateX: 1.5 }, { translateY: 1.5 }] },
@@ -1580,7 +1580,7 @@ const s = StyleSheet.create({
   },
   homeStats: { gap: 0 },
   homeStatsSpacer: { width: 12 },
-  homeJoinedStat: { flex: 1, transform: [{ translateX: 19 }] },
+  homeJoinedStat: { flex: 1, transform: [{ translateX: -19 }] },
   caption: { color: c.muted, fontSize: 11 },
   statValue: { color: c.ink, fontSize: 16, fontWeight: "800", marginTop: 3 },
   pill: {
