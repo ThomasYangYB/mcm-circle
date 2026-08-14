@@ -26,6 +26,8 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import * as ImagePicker from "expo-image-picker";
+import QRCode from "react-native-qrcode-svg";
 import {
   Award,
   BookOpen,
@@ -69,6 +71,7 @@ type AppState = {
   currentStore: StoreName;
   setCurrentStore: (store: StoreName) => void;
   addStamp: (id: string, type: JourneyStamp["type"]) => void;
+  updateAvatar: (uri: string) => void;
 };
 const Ctx = createContext<AppState | null>(null);
 const useApp = () => useContext(Ctx)!;
@@ -105,6 +108,10 @@ const LEGACY_STORE_NAMES: Record<string, StoreName> = {
 };
 const getStampAsset = (storeName: string) =>
   STORE_STAMP_IMAGES[storeName] ?? STORE_STAMP_IMAGES[LEGACY_STORE_NAMES[storeName]];
+const formatStoreName = (storeName: string) =>
+  storeName === "MCM 하우스 플래그십스토어"
+    ? "MCM 하우스\n플래그십스토어"
+    : storeName.replace(" 롯데백화점 ", " 롯데백화점\n").replace(" 면세점 ", " 면세점\n");
 
 function Provider({ children }: { children: React.ReactNode }) {
   const [role, setRoleState] = useState<UserRole>("customer");
@@ -191,6 +198,10 @@ function Provider({ children }: { children: React.ReactNode }) {
                   ],
                 },
           ),
+        ),
+      updateAvatar: (uri: string) =>
+        setCustomers((all) =>
+          all.map((x) => (x.id === selected ? { ...x, avatarUrl: uri } : x)),
         ),
     }),
     [role, isLoggedIn, authScreen, customers, selected, currentStore],
@@ -426,7 +437,7 @@ function SignUp() {
           >
             <Text style={s.link}>‹ 로그인으로 돌아가기</Text>
           </Pressable>
-          <Text style={s.kicker}>PRIVATE CIRCLE MEMBERSHIP</Text>
+          <Text style={s.signupKicker}>PRIVATE CIRCLE MEMBERSHIP</Text>
           <Text style={s.pageTitle}>회원가입</Text>
           <Text style={s.body}>
             MCM과의 특별한 여정을 시작하기 위한{"\n"}기본 정보를 입력해 주세요.
@@ -549,27 +560,17 @@ function CustomerHome() {
       />
       <SectionTitle title="고객 맞춤 추천 제품" action={() => n.navigate("Recommendations")} />
       <ProductList products={MOCK_PRODUCTS.slice(0, 3)} />
-      <View style={s.grid}>
-        <Quick
-          icon={<MapPinned color={c.gold} />}
-          title="나의 여정 이력"
-          onPress={() => n.navigate("Journey")}
-        />
-        <Quick
-          icon={<Award color={c.gold} />}
-          title="멤버십 혜택"
-          onPress={() => n.navigate("Benefits")}
-        />
-        <Quick
-          icon={<Heart color={c.gold} />}
-          title="관심 저장 제품"
-          onPress={() => n.navigate("Saved")}
-        />
-        <Quick
-          icon={<UserRound color={c.gold} />}
-          title="나의 여권"
-          onPress={() => n.navigate("Profile")}
-        />
+      <View style={s.homeActionList}>
+        <Pressable onPress={() => n.navigate("Passport")} style={s.homeActionDark}>
+          <BookOpen color={c.paper} size={24} />
+          <Text style={s.homeActionDarkText}>Journey Passport</Text>
+          <ChevronRight color={c.paper} size={24} />
+        </Pressable>
+        <Pressable onPress={() => n.navigate("Saved")} style={s.homeActionLight}>
+          <Heart color={c.gold} size={24} />
+          <Text style={s.homeActionLightText}>관심 저장 제품</Text>
+          <ChevronRight color={c.gold} size={24} />
+        </Pressable>
       </View>
       <Modal transparent visible={qr} animationType="fade">
         <View style={s.modal}>
@@ -581,7 +582,7 @@ function CustomerHome() {
               </Pressable>
             </View>
             <View style={s.fakeQr}>
-              <QrCode size={132} color={c.paper} />
+              <QRCode value={`mcm-private-circle://customer/${customer.customerNo}`} size={190} color={c.paper} backgroundColor={c.ink} />
             </View>
             <Text style={s.body}>
               매장 방문 시 담당 CA에게 이 QR을 보여주세요.
@@ -642,7 +643,7 @@ function StampCard({ item }: { item: JourneyStamp }) {
         </View>
       )}
       <Text numberOfLines={2} style={s.stampTitle}>
-        {item.storeName}
+        {formatStoreName(item.storeName)}
       </Text>
       <Text style={s.stampDate}>{item.issuedAt.slice(0, 10)}</Text>
     </View>
@@ -715,31 +716,50 @@ function Quick({
 
 function Passport() {
   const { customer } = useApp();
+  const n = useNavigation<any>();
+  const [qr, setQr] = useState(false);
+  const lastStamp = customer.stamps[0];
+  const lastPurchase = customer.purchases[0];
   return (
     <Screen title="Journey Passport" back>
       <Card dark>
-        <Text style={s.darkKicker}>OFFICIAL DIGITAL PASSPORT</Text>
-        <Text style={s.passportName}>{customer.name}</Text>
-        <Text style={s.darkBody}>MEMBER NO. {customer.customerNo}</Text>
+        <View style={s.passportCardTop}>
+          <View style={{ flex: 1 }}>
+            <Text style={s.darkKicker}>OFFICIAL DIGITAL PASSPORT</Text>
+            <Text style={s.passportName}>{customer.name}</Text>
+            <Text style={s.darkBody}>MEMBER NO. {customer.customerNo}</Text>
+          </View>
+          <Pressable onPress={() => setQr(true)} style={s.passportQrDark} accessibilityLabel="고객 식별 QR 열기">
+            <QrCode size={34} color={c.champagne} />
+          </Pressable>
+        </View>
         <View style={s.stats}>
           <Stat dark label="MEMBERSHIP" value={customer.membershipTier} />
           <Stat dark label="가입일" value={customer.joinedAt} />
         </View>
       </Card>
-      <View style={s.passportOwnerRow}>
-        <View>
-          <Text style={s.kicker}>PASSPORT HOLDER</Text>
-          <Text style={s.cardTitle}>{customer.name}</Text>
-          <Text style={s.body}>MCM PRIVATE CIRCLE</Text>
-        </View>
-        <View style={s.passportQr}><QrCode size={42} color={c.gold} /></View>
-      </View>
+      <Text style={s.summaryTitle}>최근 여정 요약</Text>
+      <Card>
+        <View style={s.summaryRow}><MapPin size={22} color={c.gold} /><View><Text style={s.caption}>마지막 방문</Text><Text style={s.cardTitle}>{lastStamp ? `${lastStamp.storeName} · ${lastStamp.issuedAt.slice(0, 7)}` : "첫 방문을 기다리고 있어요"}</Text></View></View>
+        <View style={s.summaryRow}><CalendarDays size={22} color={c.gold} /><View><Text style={s.caption}>총 방문 스탬프</Text><Text style={s.cardTitle}>{customer.stamps.length}개</Text></View></View>
+        {lastPurchase && <View style={s.summaryRow}><Sparkles size={22} color={c.gold} /><View><Text style={s.caption}>최근 구매</Text><Text style={s.cardTitle}>{lastPurchase.purchasedAt} · {lastPurchase.productName}</Text></View></View>}
+      </Card>
       <SectionTitle title="나의 국내 방문 도장" />
       <View style={s.passportStampGrid}>
         {customer.stamps.map((x) => (
           <StampCard key={x.id} item={x} />
         ))}
       </View>
+      <Button onPress={() => n.navigate("Journey")}>여정 기록 전체 보기</Button>
+      <Modal transparent visible={qr} animationType="fade">
+        <View style={s.modal}>
+          <Card>
+            <View style={s.row}><Text style={s.sectionTitle}>고객 식별 QR</Text><Pressable onPress={() => setQr(false)}><X color={c.ink} size={26} /></Pressable></View>
+            <View style={s.realQr}><QRCode value={`mcm-private-circle://customer/${customer.customerNo}`} size={216} color={c.ink} backgroundColor={c.paper} /></View>
+            <Text style={s.body}>매장 방문 시 담당 CA에게 보여주세요.</Text>
+          </Card>
+        </View>
+      </Modal>
     </Screen>
   );
 }
@@ -769,11 +789,11 @@ function Journey() {
         <EmptyJourney />
       ) : tab === "stamps" ? (
         <View style={s.journeyTimeline}>
-          {customer.stamps.map((x) => {
+          {customer.stamps.map((x, index) => {
             const asset = getStampAsset(x.storeName);
             return (
               <View key={x.id} style={s.journeyStop}>
-                <View style={s.journeyRail} />
+                {index < customer.stamps.length - 1 && <View style={s.journeyRail} />}
                 {asset ? (
                   <Image source={asset} style={s.journeyStampImage} />
                 ) : (
@@ -830,23 +850,33 @@ function EmptyJourney() {
   return <View style={s.emptyJourney}><View style={s.emptyJourneyIcon}><MapPinned size={44} color={c.forest} /></View><Text style={s.emptyJourneyTitle}>여정을 시작하세요</Text><Text style={s.emptyJourneyBody}>MCM과 함께하는 첫 번째 방문을 Journey Passport에 기록합니다.</Text><Button onPress={() => n.navigate("Passport")} icon={<BookOpen color={c.paper} size={24} />}>여권 프로필 확인</Button><Button secondary onPress={() => n.navigate("Recommendations")}>추천 제품 보기</Button></View>;
 }
 function Profile() {
-  const { customer, logout } = useApp();
+  const { customer, logout, updateAvatar } = useApp();
   const n = useNavigation<any>();
+  const pickProfilePhoto = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled) updateAvatar(result.assets[0].uri);
+  };
   return (
     <Screen>
-      <Text style={s.kicker}>MY PASSPORT</Text>
+      <Text style={s.profileKicker}>MY PASSPORT</Text>
       <Text style={s.pageTitle}>나의 여권</Text>
       <Card dark>
         <View style={s.profilePassportTop}>
-          <View style={s.profilePhotoFrame}>
+          <Pressable onPress={pickProfilePhoto} style={s.profilePhotoFrame}>
             <Image source={{ uri: customer.avatarUrl }} style={s.profilePhoto} />
-          </View>
+            <View style={s.photoEdit}><Text style={s.photoEditText}>변경</Text></View>
+          </Pressable>
           <View style={{ flex: 1 }}>
             <Text style={s.darkKicker}>PASSPORT HOLDER</Text>
             <Text style={s.passportName}>{customer.name}</Text>
             <Text style={s.darkBody}>MEMBER NO. {customer.customerNo}</Text>
-            {customer.membershipTier === "VIP" && <Pill tone="wine">VIP</Pill>}
           </View>
+          {customer.membershipTier === "VIP" && <View style={s.profileVip}><Pill tone="wine">VIP</Pill></View>}
         </View>
         <View style={s.stats}>
           <Stat dark label="국내 방문" value={`${customer.stamps.length}곳`} />
@@ -1386,8 +1416,8 @@ export default function App() {
 
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: c.bg },
-  scrollOuter: { flexGrow: 1, alignItems: "center", paddingBottom: 42 },
-  scroll: { width: "100%", padding: 20, gap: 22, paddingBottom: 42 },
+  scrollOuter: { flexGrow: 1, alignItems: "center", paddingBottom: 18 },
+  scroll: { width: "100%", padding: 20, gap: 24, paddingBottom: 20 },
   splash: { flex: 1, backgroundColor: "#12100E" },
   splashPress: {
     flex: 1,
@@ -1398,16 +1428,16 @@ const s = StyleSheet.create({
   splashLogo: { width: "88%", maxWidth: 500, height: 178 },
   login: { backgroundColor: c.ink },
   loginTablet: { flexDirection: "row" },
-  loginDark: { flex: 1, padding: 28, backgroundColor: c.ink, minHeight: 480 },
+  loginDark: { flex: 1, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 26, backgroundColor: c.ink, minHeight: 348 },
   loginDarkTablet: { flex: 0.42, padding: 48 },
   loginInner: { flex: 1, maxWidth: 460, alignSelf: "center", width: "100%", justifyContent: "flex-start" },
-  loginLogo: { width: 220, height: 82, alignSelf: "flex-start" },
-  loginHeroSpacer: { height: 62 },
+  loginLogo: { width: 255, height: 96, alignSelf: "flex-start" },
+  loginHeroSpacer: { height: 28 },
   loginForm: {
     flexGrow: 1,
     backgroundColor: c.paper,
     paddingVertical: 38,
-    gap: 20,
+    gap: 24,
   },
   loginFormTablet: {
     flex: 0.58,
@@ -1420,8 +1450,8 @@ const s = StyleSheet.create({
     alignSelf: "center",
     gap: 20,
   },
-  authField: { gap: 9, marginTop: 4 },
-  loginButtonWrap: { marginTop: 10 },
+  authField: { gap: 11, marginTop: 5 },
+  loginButtonWrap: { marginTop: 18 },
   authTopRow: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -1451,10 +1481,10 @@ const s = StyleSheet.create({
   signupText: { color: c.muted, fontSize: 13 },
   signupLinkText: { color: c.gold, fontSize: 13, fontWeight: "800" },
   signupOuter: { flexGrow: 1, alignItems: "center", padding: 24 },
-  signupInner: { width: "100%", maxWidth: 560, gap: 16, paddingTop: 22 },
+  signupInner: { width: "100%", maxWidth: 560, gap: 18, paddingTop: 22 },
   backText: {
     alignSelf: "flex-start",
-    minHeight: 40,
+    minHeight: 52,
     justifyContent: "center",
   },
   logo: { color: c.paper, fontWeight: "900", fontSize: 32, letterSpacing: 6 },
@@ -1488,6 +1518,8 @@ const s = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: 4,
   },
+  signupKicker: { color: c.gold, fontSize: 13, fontWeight: "800", letterSpacing: 1.25, marginBottom: -8 },
+  profileKicker: { color: c.gold, fontSize: 14, fontWeight: "800", letterSpacing: 1.4, marginBottom: -12 },
   darkKicker: {
     color: c.champagne,
     fontSize: 10,
@@ -1502,8 +1534,8 @@ const s = StyleSheet.create({
     borderColor: c.line,
     paddingBottom: 14,
   },
-  homeLogo: { width: 142, height: 54 },
-  homeLogoPlate: { backgroundColor: c.ink, borderRadius: 5, paddingHorizontal: 9, paddingVertical: 4 },
+  homeLogo: { width: 190, height: 76 },
+  homeLogoPlate: { paddingHorizontal: 2, paddingVertical: 2, shadowColor: "#000", shadowOpacity: 0.18, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 3 },
   homeGreeting: { color: c.ink, fontSize: 25, fontWeight: "800", lineHeight: 32, marginTop: -10, marginBottom: -8 },
   brand: { color: c.ink, fontSize: 25, fontWeight: "900", letterSpacing: 4 },
   card: {
@@ -1573,19 +1605,24 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-end",
     justifyContent: "space-between",
-    marginTop: 14,
+    marginTop: 18,
   },
   sectionTitle: { color: c.ink, fontSize: 18, fontWeight: "800" },
   link: { color: c.gold, fontSize: 14, fontWeight: "800" },
   sectionAction: { minHeight: 40, flexDirection: "row", alignItems: "center", gap: 1, justifyContent: "center" },
   stampPreview: { width: 132, alignItems: "center", gap: 7, paddingVertical: 6, paddingHorizontal: 5 },
-  stampImage: { width: 78, height: 78 },
-  stampFallback: { width: 78, height: 78, borderRadius: 39, borderWidth: 1.5, borderColor: c.wine, alignItems: "center", justifyContent: "center" },
-  stampTitle: { color: c.ink, fontSize: 12, fontWeight: "700", textAlign: "center", lineHeight: 17, minHeight: 34 },
+  stampImage: { width: 94, height: 94 },
+  stampFallback: { width: 94, height: 94, borderRadius: 47, borderWidth: 1.5, borderColor: c.wine, alignItems: "center", justifyContent: "center" },
+  stampTitle: { color: c.ink, fontSize: 13, fontWeight: "700", textAlign: "center", lineHeight: 18, minHeight: 36 },
   stampDate: { color: c.wine, fontSize: 10, fontWeight: "700" },
   passportOwnerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 4 },
   passportQr: { width: 70, height: 70, borderRadius: 12, borderWidth: 1, borderColor: c.gold, alignItems: "center", justifyContent: "center" },
-  passportStampGrid: { flexDirection: "row", flexWrap: "wrap", rowGap: 24, columnGap: 12, justifyContent: "flex-start" },
+  passportStampGrid: { flexDirection: "row", flexWrap: "wrap", rowGap: 26, columnGap: 12, justifyContent: "center" },
+  passportCardTop: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
+  passportQrDark: { width: 62, height: 62, borderRadius: 10, borderWidth: 1, borderColor: c.gold, alignItems: "center", justifyContent: "center" },
+  summaryTitle: { color: c.ink, fontSize: 20, fontWeight: "800", marginTop: 2, marginBottom: -10 },
+  summaryRow: { flexDirection: "row", gap: 14, alignItems: "center", paddingVertical: 7, borderBottomWidth: 1, borderColor: c.line },
+  realQr: { alignItems: "center", paddingVertical: 20, backgroundColor: c.paper },
   productList: { gap: 12 },
   productGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   productGridItem: { width: "32%" },
@@ -1610,6 +1647,11 @@ const s = StyleSheet.create({
     padding: 16,
     gap: 9,
   },
+  homeActionList: { gap: 12, marginTop: 2 },
+  homeActionDark: { minHeight: 66, borderRadius: 8, backgroundColor: c.ink, paddingHorizontal: 18, flexDirection: "row", gap: 14, alignItems: "center" },
+  homeActionDarkText: { flex: 1, color: c.paper, fontSize: 17, fontWeight: "800" },
+  homeActionLight: { minHeight: 66, borderRadius: 8, backgroundColor: c.paper, borderWidth: 1, borderColor: c.line, paddingHorizontal: 18, flexDirection: "row", gap: 14, alignItems: "center" },
+  homeActionLightText: { flex: 1, color: c.ink, fontSize: 17, fontWeight: "800" },
   caColumns: { flexDirection: "row", gap: 20, alignItems: "flex-start" },
   caMain: { flex: 1.15, gap: 16 },
   caSide: { flex: 0.85, gap: 16 },
@@ -1635,8 +1677,8 @@ const s = StyleSheet.create({
     backgroundColor: c.ink,
   },
   headerMark: {
-    width: 38,
-    height: 38,
+    width: 46,
+    height: 46,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 8,
@@ -1644,7 +1686,7 @@ const s = StyleSheet.create({
   },
   headerLogoMark: { width: 88, backgroundColor: "transparent" },
   headerLogo: { width: 86, height: 36 },
-  headerMarkText: { color: c.champagne, fontWeight: "900", fontSize: 12 },
+  headerMarkText: { color: c.champagne, fontWeight: "900", fontSize: 30, lineHeight: 34 },
   headerKicker: {
     color: c.champagne,
     fontSize: 9,
@@ -1691,15 +1733,18 @@ const s = StyleSheet.create({
     fontSize: 14,
     color: c.ink,
   },
-  profilePassportTop: { flexDirection: "row", alignItems: "center", gap: 16 },
+  profilePassportTop: { flexDirection: "row", alignItems: "center", gap: 16, position: "relative", paddingRight: 48 },
   profilePhotoFrame: { width: 82, height: 102, borderWidth: 1, borderColor: c.champagne, padding: 5 },
   profilePhoto: { width: "100%", height: "100%", resizeMode: "cover" },
+  photoEdit: { position: "absolute", right: 3, bottom: 3, backgroundColor: c.ink, paddingHorizontal: 5, paddingVertical: 3 },
+  photoEditText: { color: c.paper, fontSize: 9, fontWeight: "800" },
+  profileVip: { position: "absolute", right: 0, top: 0 },
   journeyDescription: { color: c.muted, fontSize: 14, lineHeight: 21, marginTop: -14 },
   recommendationDescription: { color: c.muted, fontSize: 14, lineHeight: 21, marginTop: -14 },
   journeyTimeline: { paddingTop: 4, gap: 0 },
-  journeyStop: { minHeight: 122, flexDirection: "row", alignItems: "center", gap: 16, paddingLeft: 8 },
-  journeyRail: { position: "absolute", left: 49, top: -4, bottom: -6, width: 1.5, backgroundColor: c.line },
-  journeyStampImage: { width: 82, height: 82, zIndex: 1 },
+  journeyStop: { minHeight: 128, flexDirection: "row", alignItems: "center", gap: 16, paddingLeft: 8 },
+  journeyRail: { position: "absolute", left: 55, top: 105, bottom: -23, width: 1.5, backgroundColor: c.line },
+  journeyStampImage: { width: 94, height: 94, zIndex: 1 },
   journeyDot: { width: 82, height: 82, borderRadius: 41, borderWidth: 1.5, borderColor: c.wine, alignItems: "center", justifyContent: "center", zIndex: 1 },
   journeyCopy: { flex: 1, gap: 3 },
   journeyMonth: { color: c.gold, fontSize: 11, fontWeight: "800" },
