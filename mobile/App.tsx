@@ -1580,7 +1580,7 @@ const s = StyleSheet.create({
   },
   homeStats: { gap: 0 },
   homeStatsSpacer: { width: 12 },
-  homeJoinedStat: { flex: 1, transform: [{ translateX: 19 }] },
+  homeJoinedStat: { flex: 1, transform: [{ translateX: 12 }] },
   caption: { color: c.muted, fontSize: 11 },
   statValue: { color: c.ink, fontSize: 16, fontWeight: "800", marginTop: 3 },
   pill: {
