@@ -358,7 +358,7 @@ function Login() {
         <View style={isTablet ? s.loginFormInner : undefined}>
           <View style={s.authTopRow}>
             <View>
-              <Text style={s.kicker}>
+              <Text style={[s.kicker, s.loginKicker]}>
                 {isCustomer ? "WELCOME BACK" : "CA WORKSTATION"}
               </Text>
               <Text style={s.pageTitle}>
@@ -1431,7 +1431,7 @@ const s = StyleSheet.create({
   loginDark: { height: 348, flexGrow: 0, flexShrink: 0, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 26, backgroundColor: c.ink },
   loginDarkTablet: { flex: 0.42, height: undefined, padding: 48 },
   loginInner: { flex: 1, maxWidth: 460, alignSelf: "center", width: "100%", justifyContent: "flex-start" },
-  loginLogo: { width: 255, height: 96, alignSelf: "flex-start", marginLeft: -18 },
+  loginLogo: { width: 272, height: 104, alignSelf: "flex-start", marginLeft: -18, marginTop: 7 },
   loginHeroSpacer: { height: 28 },
   loginForm: {
     flexGrow: 1,
@@ -1452,13 +1452,13 @@ const s = StyleSheet.create({
   },
   authField: { gap: 11, marginTop: 5 },
   passwordField: { marginTop: 14 },
-  loginButtonWrap: { marginTop: 18 },
+  loginButtonWrap: { marginTop: 28 },
   authTopRow: {
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
   },
-  loginIntro: { marginBottom: 6 },
+  loginIntro: { marginBottom: 18 },
   roleSwitch: {
     minWidth: 58,
     height: 44,
@@ -1503,12 +1503,12 @@ const s = StyleSheet.create({
   },
   loginHeadline: {
     color: c.paper,
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "800",
-    lineHeight: 35,
-    marginTop: 36,
+    lineHeight: 33,
+    marginTop: 32,
   },
-  loginHeadlineTablet: { fontSize: 32, lineHeight: 42 },
+  loginHeadlineTablet: { fontSize: 30, lineHeight: 40 },
   pageTitle: { color: c.ink, fontSize: 25, fontWeight: "800", lineHeight: 34 },
   body: { color: c.muted, fontSize: 14, lineHeight: 21 },
   darkBody: { color: "#D5D0C8", fontSize: 13, lineHeight: 20, marginTop: 6 },
@@ -1519,6 +1519,7 @@ const s = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: 4,
   },
+  loginKicker: { marginBottom: 12 },
   signupKicker: { color: c.gold, fontSize: 13, fontWeight: "800", letterSpacing: 1.25, marginBottom: -8 },
   profileKicker: { color: c.gold, fontSize: 14, fontWeight: "800", letterSpacing: 1.4, marginBottom: -12 },
   darkKicker: {
