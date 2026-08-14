@@ -1444,7 +1444,7 @@ const s = StyleSheet.create({
   loginDarkTablet: { flex: 0.42, height: undefined, padding: 48 },
   loginInner: { flex: 1, maxWidth: 460, alignSelf: "center", width: "100%", justifyContent: "flex-start" },
   loginLogo: { width: 308, height: 117, alignSelf: "flex-start", marginLeft: -18, marginTop: 7 },
-  loginHeroSpacer: { height: 28 },
+  loginHeroSpacer: { height: 12 },
   loginForm: {
     flexGrow: 1,
     backgroundColor: c.paper,
@@ -1518,7 +1518,7 @@ const s = StyleSheet.create({
     fontSize: 24,
     fontWeight: "800",
     lineHeight: 33,
-    marginTop: 32,
+    marginTop: 20,
   },
   loginHeadlineTablet: { fontSize: 30, lineHeight: 40 },
   pageTitle: { color: c.ink, fontSize: 25, fontWeight: "800", lineHeight: 34 },
