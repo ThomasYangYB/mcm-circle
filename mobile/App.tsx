@@ -393,7 +393,7 @@ function Login() {
             <Text style={s.label}>{isCustomer ? "이메일 또는 휴대폰 번호" : "담당 CA 사번"}</Text>
             <TextInput style={s.textInput} placeholder={isCustomer ? "example@email.com" : "CA-1092"} placeholderTextColor={c.muted} autoCapitalize="none" />
           </View>
-          <View style={s.authField}>
+          <View style={[s.authField, s.passwordField]}>
             <Text style={s.label}>비밀번호</Text>
             <TextInput style={s.textInput} placeholder="비밀번호를 입력하세요" placeholderTextColor={c.muted} secureTextEntry />
           </View>
@@ -1428,10 +1428,10 @@ const s = StyleSheet.create({
   splashLogo: { width: "88%", maxWidth: 500, height: 178 },
   login: { backgroundColor: c.ink },
   loginTablet: { flexDirection: "row" },
-  loginDark: { flex: 1, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 26, backgroundColor: c.ink, minHeight: 348 },
-  loginDarkTablet: { flex: 0.42, padding: 48 },
+  loginDark: { height: 348, flexGrow: 0, flexShrink: 0, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 26, backgroundColor: c.ink },
+  loginDarkTablet: { flex: 0.42, height: undefined, padding: 48 },
   loginInner: { flex: 1, maxWidth: 460, alignSelf: "center", width: "100%", justifyContent: "flex-start" },
-  loginLogo: { width: 255, height: 96, alignSelf: "flex-start" },
+  loginLogo: { width: 255, height: 96, alignSelf: "flex-start", marginLeft: -18 },
   loginHeroSpacer: { height: 28 },
   loginForm: {
     flexGrow: 1,
@@ -1451,6 +1451,7 @@ const s = StyleSheet.create({
     gap: 20,
   },
   authField: { gap: 11, marginTop: 5 },
+  passwordField: { marginTop: 14 },
   loginButtonWrap: { marginTop: 18 },
   authTopRow: {
     flexDirection: "row",
