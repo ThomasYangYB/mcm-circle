@@ -531,7 +531,9 @@ function CustomerHome() {
             value={`${customer.stamps.length}개 도장`}
           />
           <View style={s.homeStatsSpacer} />
-          <Stat dark label="가입일" value={customer.joinedAt} />
+          <View style={s.homeJoinedStat}>
+            <Stat dark label="가입일" value={customer.joinedAt} />
+          </View>
         </View>
         <View style={s.row}>
           <View style={{ flex: 1 }}>
@@ -1545,8 +1547,8 @@ const s = StyleSheet.create({
     borderColor: c.line,
     paddingBottom: 14,
   },
-  homeLogo: { width: 212, height: 78 },
-  homeLogoPlate: { paddingHorizontal: 2, paddingVertical: 0, shadowColor: "#181512", shadowOpacity: 0.48, shadowRadius: 7, shadowOffset: { width: 0, height: 2 }, elevation: 9 },
+  homeLogo: { width: 212, height: 78, tintColor: c.ink },
+  homeLogoPlate: { paddingHorizontal: 2, paddingVertical: 0 },
   homeGreeting: { color: c.ink, fontSize: 25, fontWeight: "800", lineHeight: 32, marginTop: -10, marginBottom: -15 },
   brand: { color: c.ink, fontSize: 25, fontWeight: "900", letterSpacing: 4 },
   card: {
@@ -1575,6 +1577,7 @@ const s = StyleSheet.create({
   },
   homeStats: { gap: 0 },
   homeStatsSpacer: { width: 12 },
+  homeJoinedStat: { flex: 1, transform: [{ translateX: 19 }] },
   caption: { color: c.muted, fontSize: 11 },
   statValue: { color: c.ink, fontSize: 16, fontWeight: "800", marginTop: 3 },
   pill: {
