@@ -137,13 +137,23 @@ function Provider({ children }: { children: React.ReactNode }) {
         if (!v) return;
         const savedCustomers = JSON.parse(v) as Customer[];
         setCustomers(
-          savedCustomers.map((customer) => ({
-            ...customer,
-            stamps: customer.stamps.map((stamp) => ({
+          savedCustomers.map((customer) => {
+            const stamps = customer.stamps.map((stamp) => ({
               ...stamp,
               storeName: LEGACY_STORE_NAMES[stamp.storeName] ?? stamp.storeName,
-            })),
-          })),
+            }));
+            const storeFor = (type: JourneyStamp["type"], date: string) =>
+              stamps.find((stamp) => stamp.type === type && stamp.issuedAt.slice(0, 10) === date)?.storeName ??
+              stamps.find((stamp) => stamp.type === type)?.storeName ??
+              stamps[0]?.storeName ??
+              "MCM 하우스 플래그십스토어";
+            return {
+              ...customer,
+              stamps,
+              purchases: customer.purchases.map((purchase) => ({ ...purchase, storeName: purchase.storeName ?? storeFor("purchase", purchase.purchasedAt) })),
+              careRecords: customer.careRecords.map((record) => ({ ...record, storeName: record.storeName ?? storeFor("care", record.date) })),
+            };
+          }),
         );
       })
       .catch(() => undefined);
@@ -500,14 +510,12 @@ function CustomerHome() {
   const { customer } = useApp();
   const n = useNavigation<any>();
   const [qr, setQr] = useState(false);
-  const isVip = customer.membershipTier === "VIP";
   return (
     <Screen>
       <View style={s.brandRow}>
         <View style={s.homeLogoPlate}>
           <Image source={BRAND_LOGO} style={s.homeLogo} resizeMode="contain" />
         </View>
-        {isVip && <Pill tone="wine">VIP</Pill>}
       </View>
       <Text style={s.kicker}>MCM JOURNEY PASSPORT</Text>
       <Text style={s.homeGreeting}>안녕하세요, {customer.name} 님</Text>
@@ -516,12 +524,13 @@ function CustomerHome() {
         <Text style={s.darkKicker}>OFFICIAL DIGITAL PASSPORT</Text>
         <Text style={s.passportName}>{customer.name}</Text>
         <Text style={s.darkBody}>{customer.customerNo}</Text>
-        <View style={s.stats}>
+        <View style={[s.stats, s.homeStats]}>
           <Stat
             dark
             label="누적 방문 스탬프"
             value={`${customer.stamps.length}개 도장`}
           />
+          <View style={s.homeStatsSpacer} />
           <Stat dark label="가입일" value={customer.joinedAt} />
         </View>
         <View style={s.row}>
@@ -555,7 +564,7 @@ function CustomerHome() {
         data={customer.stamps.slice(0, 3)}
         keyExtractor={(x) => x.id}
         showsHorizontalScrollIndicator={false}
-        renderItem={({ item }) => <StampCard item={item} />}
+        renderItem={({ item }) => <StampCard item={item} compact />}
         contentContainerStyle={{ gap: 12 }}
       />
       <SectionTitle title="고객 맞춤 추천 제품" action={() => n.navigate("Recommendations")} />
@@ -631,18 +640,18 @@ function SectionTitle({
     </View>
   );
 }
-function StampCard({ item }: { item: JourneyStamp }) {
+function StampCard({ item, compact = false }: { item: JourneyStamp; compact?: boolean }) {
   const asset = getStampAsset(item.storeName);
   return (
     <View style={s.stampPreview}>
       {asset ? (
-        <Image source={asset} style={s.stampImage} resizeMode="contain" />
+        <Image source={asset} style={compact ? s.stampImageCompact : s.stampImage} resizeMode="contain" />
       ) : (
-        <View style={s.stampFallback}>
+        <View style={compact ? s.stampFallbackCompact : s.stampFallback}>
           <Stamp color={c.wine} size={24} />
         </View>
       )}
-      <Text numberOfLines={2} style={s.stampTitle}>
+      <Text numberOfLines={2} style={[s.stampTitle, compact && s.stampTitleCompact]}>
         {formatStoreName(item.storeName)}
       </Text>
       <Text style={s.stampDate}>{item.issuedAt.slice(0, 10)}</Text>
@@ -740,9 +749,9 @@ function Passport() {
       </Card>
       <Text style={s.summaryTitle}>최근 여정 요약</Text>
       <Card>
-        <View style={s.summaryRow}><MapPin size={22} color={c.gold} /><View><Text style={s.caption}>마지막 방문</Text><Text style={s.cardTitle}>{lastStamp ? `${lastStamp.storeName} · ${lastStamp.issuedAt.slice(0, 7)}` : "첫 방문을 기다리고 있어요"}</Text></View></View>
-        <View style={s.summaryRow}><CalendarDays size={22} color={c.gold} /><View><Text style={s.caption}>총 방문 스탬프</Text><Text style={s.cardTitle}>{customer.stamps.length}개</Text></View></View>
-        {lastPurchase && <View style={s.summaryRow}><Sparkles size={22} color={c.gold} /><View><Text style={s.caption}>최근 구매</Text><Text style={s.cardTitle}>{lastPurchase.purchasedAt} · {lastPurchase.productName}</Text></View></View>}
+        <View style={s.summaryRow}><MapPin size={22} color={c.gold} style={s.summaryIcon} /><View style={s.summaryCopy}><Text style={s.caption}>마지막 방문</Text><Text style={s.cardTitle}>{lastStamp ? `${lastStamp.storeName} · ${lastStamp.issuedAt.slice(0, 7)}` : "첫 방문을 기다리고 있어요"}</Text></View></View>
+        <View style={s.summaryRow}><Stamp size={22} color={c.gold} style={s.summaryIcon} /><View style={s.summaryCopy}><Text style={s.caption}>총 방문 스탬프</Text><Text style={s.cardTitle}>{customer.stamps.length}개</Text></View></View>
+        {lastPurchase && <View style={s.summaryRow}><CalendarDays size={22} color={c.gold} style={s.summaryIcon} /><View style={s.summaryCopy}><Text style={s.caption}>최근 구매</Text><Text style={s.cardTitle}>{lastPurchase.purchasedAt} · {lastPurchase.productName}</Text></View></View>}
       </Card>
       <SectionTitle title="나의 국내 방문 도장" />
       <View style={s.passportStampGrid}>
@@ -820,7 +829,7 @@ function Journey() {
                   <Text style={s.price}>{purchase.price.toLocaleString()}원</Text>
                 </View>
               </View>
-              <View style={s.recordMeta}><CalendarDays size={18} color={c.gold} /><Text style={s.caption}>구매 · {purchase.purchasedAt} · {purchase.storeName ?? "국내 MCM 매장"}</Text></View>
+              <View style={s.recordMeta}><CalendarDays size={18} color={c.gold} /><Text style={s.caption}>구매 · {purchase.purchasedAt} · {purchase.storeName ?? customer.stamps.find((stamp) => stamp.type === "purchase")?.storeName ?? customer.stamps[0]?.storeName}</Text></View>
             </Card>
           ))}
           {customer.careRecords.map((record) => (
@@ -1431,7 +1440,7 @@ const s = StyleSheet.create({
   loginDark: { height: 348, flexGrow: 0, flexShrink: 0, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 26, backgroundColor: c.ink },
   loginDarkTablet: { flex: 0.42, height: undefined, padding: 48 },
   loginInner: { flex: 1, maxWidth: 460, alignSelf: "center", width: "100%", justifyContent: "flex-start" },
-  loginLogo: { width: 272, height: 104, alignSelf: "flex-start", marginLeft: -18, marginTop: 7 },
+  loginLogo: { width: 290, height: 110, alignSelf: "flex-start", marginLeft: -18, marginTop: 7 },
   loginHeroSpacer: { height: 28 },
   loginForm: {
     flexGrow: 1,
@@ -1536,9 +1545,9 @@ const s = StyleSheet.create({
     borderColor: c.line,
     paddingBottom: 14,
   },
-  homeLogo: { width: 190, height: 76 },
-  homeLogoPlate: { paddingHorizontal: 2, paddingVertical: 2, shadowColor: "#000", shadowOpacity: 0.18, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 3 },
-  homeGreeting: { color: c.ink, fontSize: 25, fontWeight: "800", lineHeight: 32, marginTop: -10, marginBottom: -8 },
+  homeLogo: { width: 212, height: 78 },
+  homeLogoPlate: { paddingHorizontal: 2, paddingVertical: 0, shadowColor: "#181512", shadowOpacity: 0.48, shadowRadius: 7, shadowOffset: { width: 0, height: 2 }, elevation: 9 },
+  homeGreeting: { color: c.ink, fontSize: 25, fontWeight: "800", lineHeight: 32, marginTop: -10, marginBottom: -15 },
   brand: { color: c.ink, fontSize: 25, fontWeight: "900", letterSpacing: 4 },
   card: {
     backgroundColor: c.paper,
@@ -1564,6 +1573,8 @@ const s = StyleSheet.create({
     paddingTop: 14,
     marginTop: 10,
   },
+  homeStats: { gap: 0 },
+  homeStatsSpacer: { width: 12 },
   caption: { color: c.muted, fontSize: 11 },
   statValue: { color: c.ink, fontSize: 16, fontWeight: "800", marginTop: 3 },
   pill: {
@@ -1614,16 +1625,21 @@ const s = StyleSheet.create({
   sectionAction: { minHeight: 40, flexDirection: "row", alignItems: "center", gap: 1, justifyContent: "center" },
   stampPreview: { width: 132, alignItems: "center", gap: 7, paddingVertical: 6, paddingHorizontal: 5 },
   stampImage: { width: 94, height: 94 },
+  stampImageCompact: { width: 78, height: 78 },
   stampFallback: { width: 94, height: 94, borderRadius: 47, borderWidth: 1.5, borderColor: c.wine, alignItems: "center", justifyContent: "center" },
+  stampFallbackCompact: { width: 78, height: 78, borderRadius: 39, borderWidth: 1.5, borderColor: c.wine, alignItems: "center", justifyContent: "center" },
   stampTitle: { color: c.ink, fontSize: 13, fontWeight: "700", textAlign: "center", lineHeight: 18, minHeight: 36 },
+  stampTitleCompact: { fontSize: 12, lineHeight: 17, minHeight: 34 },
   stampDate: { color: c.wine, fontSize: 10, fontWeight: "700" },
   passportOwnerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 4 },
   passportQr: { width: 70, height: 70, borderRadius: 12, borderWidth: 1, borderColor: c.gold, alignItems: "center", justifyContent: "center" },
-  passportStampGrid: { flexDirection: "row", flexWrap: "wrap", rowGap: 26, columnGap: 12, justifyContent: "center" },
+  passportStampGrid: { flexDirection: "row", flexWrap: "wrap", rowGap: 26, columnGap: 0, justifyContent: "space-evenly" },
   passportCardTop: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
   passportQrDark: { width: 62, height: 62, borderRadius: 10, borderWidth: 1, borderColor: c.gold, alignItems: "center", justifyContent: "center" },
   summaryTitle: { color: c.ink, fontSize: 20, fontWeight: "800", marginTop: 2, marginBottom: -10 },
-  summaryRow: { flexDirection: "row", gap: 14, alignItems: "center", paddingVertical: 7, borderBottomWidth: 1, borderColor: c.line },
+  summaryRow: { flexDirection: "row", gap: 14, alignItems: "flex-start", paddingVertical: 9, borderBottomWidth: 1, borderColor: c.line },
+  summaryIcon: { marginTop: 8 },
+  summaryCopy: { flex: 1, marginTop: -2 },
   realQr: { alignItems: "center", paddingVertical: 20, backgroundColor: c.paper },
   productList: { gap: 12 },
   productGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
