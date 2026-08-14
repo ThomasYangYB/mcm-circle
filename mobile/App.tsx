@@ -344,14 +344,14 @@ function Login() {
       <StatusBar style="light" />
       <View style={[s.loginDark, isTablet && s.loginDarkTablet]}>
         <View style={isTablet ? s.loginInner : undefined}>
-          <Image source={BRAND_LOGO} style={s.loginLogo} resizeMode="contain" />
+          <Image source={BRAND_LOGO} style={[s.loginLogo, isTablet && s.loginLogoTablet]} resizeMode="contain" />
           <View style={s.loginHeroSpacer} />
           <Pill>JOURNEY PASSPORT</Pill>
           <Text style={[s.loginHeadline, isTablet && s.loginHeadlineTablet]}>
             고객의 모든 여정을{`\n`}더 특별하게 기억합니다
           </Text>
           <Text style={s.darkBody}>
-            방문·상담·구매·케어 이력을 하나의 프라이빗 여권에 담습니다.
+            방문·상담·구매·케어 이력을{`\n`}하나의 프라이빗 여권에 담습니다.
           </Text>
         </View>
       </View>
@@ -1441,9 +1441,10 @@ const s = StyleSheet.create({
   login: { backgroundColor: c.ink },
   loginTablet: { flexDirection: "row" },
   loginDark: { height: 348, flexGrow: 0, flexShrink: 0, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 26, backgroundColor: c.ink },
-  loginDarkTablet: { flex: 0.42, height: undefined, padding: 48 },
+  loginDarkTablet: { width: "45%", flexGrow: 0, flexShrink: 0, height: undefined, padding: 48 },
   loginInner: { flex: 1, maxWidth: 460, alignSelf: "center", width: "100%", justifyContent: "flex-start" },
   loginLogo: { width: 308, height: 117, alignSelf: "flex-start", marginLeft: -18, marginTop: 7 },
+  loginLogoTablet: { width: 340, height: 130, marginLeft: 0, marginTop: 14 },
   loginHeroSpacer: { height: 12 },
   loginForm: {
     flexGrow: 1,
@@ -1452,9 +1453,10 @@ const s = StyleSheet.create({
     gap: 24,
   },
   loginFormTablet: {
-    flex: 0.58,
-    justifyContent: "center",
-    paddingVertical: 58,
+    flex: 1,
+    justifyContent: "flex-start",
+    paddingTop: 58,
+    paddingBottom: 58,
   },
   loginFormInner: {
     width: "100%",
