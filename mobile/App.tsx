@@ -346,16 +346,16 @@ function Header({
   const { logout, currentStore } = useApp();
   const { isTablet } = useResponsive();
   return (
-    <View style={[s.header, logoOnly && !isTablet && s.headerHome]}>
+    <View style={[s.header, logoOnly && s.headerHome]}>
       <Pressable
         hitSlop={12}
         onPress={() => (back ? n.goBack() : undefined)}
-        style={[s.headerMark, !back && s.headerLogoMark, logoOnly && !isTablet && s.headerHomeMark]}
+        style={[s.headerMark, !back && s.headerLogoMark, logoOnly && s.headerHomeMark]}
       >
         {back ? (
           <ChevronLeft color={c.champagne} size={24} strokeWidth={2.6} />
         ) : (
-          <Image source={logoOnly || !caMode ? BRAND_LOGO_TIGHT : BRAND_LOGO} style={[s.headerLogo, caMode && s.caHeaderLogo, caMode && !isTablet && s.caHeaderLogoPhone, logoOnly && !isTablet && s.headerHomeLogo]} resizeMode="contain" />
+          <Image source={logoOnly || !caMode ? BRAND_LOGO_TIGHT : BRAND_LOGO} style={[s.headerLogo, caMode && s.caHeaderLogo, caMode && !isTablet && s.caHeaderLogoPhone, logoOnly && s.headerHomeLogo]} resizeMode="contain" />
         )}
       </Pressable>
       {caMode ? (
@@ -1692,7 +1692,7 @@ const s = StyleSheet.create({
   // 휴대폰에서는 logo.png 파일 내부의 투명 여백까지 보정해, 실제 로고 픽셀이 제목 시작선과 맞는다.
   // 태블릿은 별도 스타일을 유지한다.
   // 휴대폰: 본문 시작선(24px)에 보이는 로고의 시작점이 맞도록 보정한다.
-  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: -16, marginTop: 8 },
+  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: -40, marginTop: 8 },
   // 실제 로고 픽셀은 잘리지 않는다.
   // 태블릿: 로그인 본문보다 로고가 안쪽으로 보이던 여백을 명확히 제거한다.
   loginLogoTablet: { width: 370, height: 142, marginLeft: -60, marginTop: 0 },
