@@ -86,28 +86,27 @@ const storageKey = "mcm-mobile-customers";
 const BRAND_LOGO = require("../logo.png");
 const RECOMMEND_ICON = require("../recommend.png");
 
-// 스타일을 별도로 주지 않은 안내 문구와 입력값도 Pretendard를 사용한다.
-// 각 화면의 굵은 텍스트는 아래 StyleSheet에서 Bold/SemiBold로 덮어쓴다.
+// 스타일을 별도로 주지 않은 안내 문구도 Pretendard를 사용한다.
+// 입력칸은 Android 한글 조합을 안정적으로 유지하기 위해 각 화면의 style로만 글꼴을 지정한다.
 type FontDefaultComponent = { defaultProps?: { style?: unknown } };
 (Text as unknown as FontDefaultComponent).defaultProps = { style: { fontFamily: "Pretendard" } };
-(TextInput as unknown as FontDefaultComponent).defaultProps = { style: { fontFamily: "Pretendard" } };
 
 // 국내 공식 지점용 여권 도장. 실제 발급 날짜는 고객 데이터에서 별도로 표시한다.
 const STORE_STAMP_IMAGES: Record<string, number> = {
-  "MCM 하우스 플래그십스토어": require("../stores/journey-stamp-seoul-haus-flagship-transparent.png"),
-  "MCM 롯데백화점 잠실점": require("../stores/journey-stamp-seoul-lotte-jamsil-transparent.png"),
-  "MCM 롯데백화점 본점": require("../stores/journey-stamp-seoul-lotte-main-transparent.png"),
-  "MCM 신라면세점 서울점": require("../stores/journey-stamp-seoul-shilla-duty-free-transparent.png"),
-  "MCM 신세계면세점 명동점": require("../stores/journey-stamp-seoul-shinsegae-duty-free-main-transparent.png"),
-  "MCM 현대면세점 무역센터점": require("../stores/journey-stamp-seoul-hyundai-duty-free-trade-center-transparent.png"),
-  "MCM 롯데면세점 월드타워점": require("../stores/journey-stamp-seoul-lotte-world-tower-duty-free-transparent.png"),
-  "MCM 롯데면세점 본점": require("../stores/journey-stamp-seoul-lotte-duty-free-main-transparent.png"),
-  "MCM 파주 프리미엄 아울렛": require("../stores/journey-stamp-paju-premium-outlet-transparent.png"),
-  "MCM 대구 롯데백화점": require("../stores/journey-stamp-daegu-lotte-transparent.png"),
-  "MCM 부산 롯데면세점": require("../stores/journey-stamp-busan-lotte-duty-free-transparent.png"),
-  "MCM 인천 T1 현대면세점": require("../stores/journey-stamp-incheon-t1-hyundai-duty-free-transparent.png"),
-  "MCM 제주 신라면세점": require("../stores/journey-stamp-jeju-shilla-duty-free-transparent.png"),
-  "MCM 제주 롯데면세점": require("../stores/journey-stamp-jeju-lotte-duty-free-transparent.png"),
+  "MCM 하우스 플래그십스토어": require("../stores/journey-stamp-seoul-haus-flagship-96.png"),
+  "MCM 롯데백화점 잠실점": require("../stores/journey-stamp-seoul-lotte-jamsil-96.png"),
+  "MCM 롯데백화점 본점": require("../stores/journey-stamp-seoul-lotte-main-96.png"),
+  "MCM 신라면세점 서울점": require("../stores/journey-stamp-seoul-shilla-duty-free-96.png"),
+  "MCM 신세계면세점 명동점": require("../stores/journey-stamp-seoul-shinsegae-duty-free-main-96.png"),
+  "MCM 현대면세점 무역센터점": require("../stores/journey-stamp-seoul-hyundai-duty-free-trade-center-96.png"),
+  "MCM 롯데면세점 월드타워점": require("../stores/journey-stamp-seoul-lotte-world-tower-duty-free-96.png"),
+  "MCM 롯데면세점 본점": require("../stores/journey-stamp-seoul-lotte-duty-free-main-96.png"),
+  "MCM 파주 프리미엄 아울렛": require("../stores/journey-stamp-paju-premium-outlet-96.png"),
+  "MCM 대구 롯데백화점": require("../stores/journey-stamp-daegu-lotte-96.png"),
+  "MCM 부산 롯데면세점": require("../stores/journey-stamp-busan-lotte-duty-free-96.png"),
+  "MCM 인천 T1 현대면세점": require("../stores/journey-stamp-incheon-t1-hyundai-duty-free-96.png"),
+  "MCM 제주 신라면세점": require("../stores/journey-stamp-jeju-shilla-duty-free-96.png"),
+  "MCM 제주 롯데면세점": require("../stores/journey-stamp-jeju-lotte-duty-free-96.png"),
 };
 const STORE_NAMES = Object.keys(STORE_STAMP_IMAGES) as StoreName[];
 
