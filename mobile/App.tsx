@@ -1691,9 +1691,11 @@ const s = StyleSheet.create({
   loginInnerTablet: { maxWidth: 420 },
   // 휴대폰에서는 logo.png 파일 내부의 투명 여백까지 보정해, 실제 로고 픽셀이 제목 시작선과 맞는다.
   // 태블릿은 별도 스타일을 유지한다.
-  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: 0, marginTop: 8 },
+  // 휴대폰: 본문 시작선(24px)에 보이는 로고의 시작점이 맞도록 보정한다.
+  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: -16, marginTop: 8 },
   // 실제 로고 픽셀은 잘리지 않는다.
-  loginLogoTablet: { width: 370, height: 142, marginLeft: 0, marginTop: 0 },
+  // 태블릿: 로그인 본문보다 로고가 안쪽으로 보이던 여백을 명확히 제거한다.
+  loginLogoTablet: { width: 370, height: 142, marginLeft: -60, marginTop: 0 },
   // 로고와 Journey Passport 배지/본문은 서로 충분히 떨어뜨린다.
   loginHeroSpacer: { height: 30 },
   loginHeroSpacerTablet: { height: 30 },
@@ -1964,7 +1966,7 @@ const s = StyleSheet.create({
     gap: 12,
     backgroundColor: c.ink,
   },
-  headerHome: { height: 92, paddingHorizontal: 8 },
+  headerHome: { height: 104, paddingHorizontal: 8 },
   headerMark: {
     width: 42,
     height: 42,
@@ -1975,9 +1977,10 @@ const s = StyleSheet.create({
   },
   // 헤더 높이를 줄이는 대신 로고가 세로 공간을 더 채우도록 한다.
   headerLogoMark: { width: 186, height: 64, backgroundColor: "transparent" },
-  headerHomeMark: { width: 260, height: 88 },
+  headerHomeMark: { width: 290, height: 100 },
   headerLogo: { width: 180, height: 64 },
-  headerHomeLogo: { width: 260, height: 88, marginLeft: 0 },
+  // 홈 로고의 실제 그림 시작점이 아래 본문(좌측 30px)과 맞도록 25px 이동.
+  headerHomeLogo: { width: 290, height: 100, marginLeft: -25 },
   headerMarkText: { color: c.champagne, fontFamily: "Pretendard-Bold", fontWeight: "900", fontSize: 30, lineHeight: 34 },
   headerKicker: {
     color: c.champagne,
