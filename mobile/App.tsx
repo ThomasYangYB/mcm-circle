@@ -1832,9 +1832,10 @@ const s = StyleSheet.create({
   productImageTablet: { width: "100%", height: 150 },
   cardTitle: { color: c.ink, fontFamily: "Pretendard-Bold", fontSize: 15, fontWeight: "800" },
   price: { color: c.gold, fontSize: 13, fontWeight: "800", marginTop: 5 },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 14 },
+  // 두 카드가 프로필 카드와 같은 좌우 끝선을 공유하도록 고정 gap 대신 남는 폭을 분배한다.
+  grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: 14 },
   quick: {
-    width: "49.45%",
+    width: "49.4%",
     minHeight: 128,
     backgroundColor: c.paper,
     borderWidth: 1,
