@@ -89,6 +89,7 @@ const STORE_STAMP_IMAGES: Record<string, number> = {
   "MCM 신세계면세점 명동점": require("../stores/journey-stamp-seoul-shinsegae-duty-free-main-96.png"),
   "MCM 현대면세점 무역센터점": require("../stores/journey-stamp-seoul-hyundai-duty-free-trade-center-96.png"),
   "MCM 롯데면세점 월드타워점": require("../stores/journey-stamp-seoul-lotte-world-tower-duty-free-96.png"),
+  "MCM 롯데면세점 본점": require("../stores/journey-stamp-seoul-lotte-duty-free-main-96.png"),
   "MCM 파주 프리미엄 아울렛": require("../stores/journey-stamp-paju-premium-outlet-96.png"),
   "MCM 대구 롯데백화점": require("../stores/journey-stamp-daegu-lotte-96.png"),
   "MCM 부산 롯데면세점": require("../stores/journey-stamp-busan-lotte-duty-free-96.png"),
@@ -113,6 +114,15 @@ const formatStoreName = (storeName: string) =>
   storeName === "MCM 하우스 플래그십스토어"
     ? "MCM 하우스\n플래그십스토어"
     : storeName.replace(" 롯데백화점 ", " 롯데백화점\n").replace(" 면세점 ", " 면세점\n");
+
+// 가로 스크롤 행의 실제 렌더 너비를 측정해, 카드가 화면 밖으로 잘리지 않도록
+// 카드 폭을 그 너비에 맞춰 계산할 때 쓴다(도장 크기를 임의로 줄이지 않기 위함).
+function useMeasuredWidth() {
+  const [width, setWidth] = useState(0);
+  const onLayout = (e: { nativeEvent: { layout: { width: number } } }) =>
+    setWidth(e.nativeEvent.layout.width);
+  return [width, onLayout] as const;
+}
 
 function Provider({ children }: { children: React.ReactNode }) {
   const [role, setRoleState] = useState<UserRole>("customer");
@@ -534,6 +544,12 @@ function CustomerHome() {
   const { customer } = useApp();
   const n = useNavigation<any>();
   const [qr, setQr] = useState(false);
+  const [stampRowWidth, onStampRowLayout] = useMeasuredWidth();
+  const recentStamps = customer.stamps.slice(0, 3);
+  const stampGap = 10;
+  const stampCardSize = stampRowWidth
+    ? (stampRowWidth - stampGap * (recentStamps.length - 1)) / Math.max(recentStamps.length, 1)
+    : 124;
   return (
     <Screen>
       <View style={[s.brandRow, s.homeBrandRow]}>
@@ -588,11 +604,12 @@ function CustomerHome() {
       />
       <FlatList
         horizontal
-        data={customer.stamps.slice(0, 3)}
+        onLayout={onStampRowLayout}
+        data={recentStamps}
         keyExtractor={(x) => x.id}
         showsHorizontalScrollIndicator={false}
-        renderItem={({ item }) => <StampCard item={item} compact />}
-        contentContainerStyle={{ gap: 12 }}
+        renderItem={({ item }) => <StampCard item={item} compact size={stampCardSize} />}
+        contentContainerStyle={{ gap: stampGap }}
       />
       <SectionTitle title="고객 맞춤 추천 제품" action={() => n.navigate("Recommendations")} />
       <ProductList products={MOCK_PRODUCTS.slice(0, 3)} />
@@ -667,19 +684,37 @@ function SectionTitle({
     </View>
   );
 }
-function StampCard({ item, compact = false }: { item: JourneyStamp; compact?: boolean }) {
+function StampCard({ item, compact = false, size }: { item: JourneyStamp; compact?: boolean; size?: number }) {
   const asset = getStampAsset(item.storeName);
+  // 원본(비압축) 카드의 도장:카드 비율(94/132)을 유지해, 카드 폭이 화면에 맞춰
+  // 계산되어도 도장이 찌그러지거나 과하게 작아지지 않도록 한다.
+  const cardWidth = compact ? size ?? 124 : 132;
+  const imageSize = compact ? Math.round(cardWidth * (94 / 132)) : 94;
   return (
-    <View style={s.stampPreview}>
+    <View style={[s.stampPreview, compact && s.stampPreviewCompact, compact && { width: cardWidth }]}>
       {asset ? (
-        <Image source={asset} style={compact ? s.stampImageCompact : s.stampImage} resizeMode="contain" />
+        <Image
+          source={asset}
+          style={compact ? { width: imageSize, height: imageSize } : s.stampImage}
+          resizeMode="contain"
+        />
       ) : (
-        <View style={compact ? s.stampFallbackCompact : s.stampFallback}>
+        <View
+          style={
+            compact
+              ? [s.stampFallbackCompact, { width: imageSize, height: imageSize, borderRadius: imageSize / 2 }]
+              : s.stampFallback
+          }
+        >
           <Stamp color={c.wine} size={24} />
         </View>
       )}
-      <Text numberOfLines={2} style={[s.stampTitle, compact && s.stampTitleCompact]}>
-        {formatStoreName(item.storeName)}
+      <Text
+        numberOfLines={compact ? 1 : 2}
+        ellipsizeMode="tail"
+        style={[s.stampTitle, compact && s.stampTitleCompact]}
+      >
+        {compact ? item.storeName : formatStoreName(item.storeName)}
       </Text>
       <Text style={s.stampDate}>{item.issuedAt.slice(0, 10)}</Text>
     </View>
@@ -994,6 +1029,18 @@ function CaHome() {
     useApp();
   const n = useNavigation<any>();
   const { isTablet } = useResponsive();
+  const [storeRowWidth, onStoreRowLayout] = useMeasuredWidth();
+  const storeGap = 10;
+  const storeMinItemWidth = 96;
+  // 매장이 13곳이 넘어 계속 가로 스크롤이 필요하지만, 한 화면에 보이는 카드는
+  // 항상 온전한 개수만 잘리지 않고 보이도록 실측 너비에서 카드 폭을 역산한다.
+  const storeVisibleCount = storeRowWidth
+    ? Math.max(2, Math.floor((storeRowWidth + storeGap) / (storeMinItemWidth + storeGap)))
+    : 3;
+  const storeItemWidth = storeRowWidth
+    ? (storeRowWidth - storeGap * (storeVisibleCount - 1)) / storeVisibleCount
+    : 110;
+  const storeIconSize = Math.round(storeItemWidth * (60 / 110));
   const clientList = (
     <>
       <SectionTitle title="최근 고객" />
@@ -1040,16 +1087,23 @@ function CaHome() {
         <Text style={s.kicker}>CURRENT STORE</Text>
         <Text style={s.cardTitle}>현재 근무 지점</Text>
         <Text style={s.body}>선택한 지점의 고유 도장이 고객 여권에 발급됩니다.</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.storePicker}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          onLayout={onStoreRowLayout}
+          snapToInterval={storeItemWidth + storeGap}
+          decelerationRate="fast"
+          contentContainerStyle={[s.storePicker, { gap: storeGap }]}
+        >
           {STORE_NAMES.map((store) => {
             const selectedStore = store === currentStore;
             return (
               <Pressable
                 key={store}
                 onPress={() => setCurrentStore(store)}
-                style={[s.storeOption, selectedStore && s.storeOptionActive]}
+                style={[s.storeOption, selectedStore && s.storeOptionActive, { width: storeItemWidth }]}
               >
-                <Image source={STORE_STAMP_IMAGES[store]} style={s.storeOptionStamp} />
+                <Image source={STORE_STAMP_IMAGES[store]} style={{ width: storeIconSize, height: storeIconSize }} />
                 <Text numberOfLines={1} ellipsizeMode="tail" style={[s.storeOptionText, selectedStore && s.storeOptionTextActive]}>
                   {store.replace("MCM ", "")}
                 </Text>
@@ -1691,12 +1745,12 @@ const s = StyleSheet.create({
   link: { color: c.gold, fontSize: 14, fontWeight: "800" },
   sectionAction: { minHeight: 40, flexDirection: "row", alignItems: "center", gap: 1, justifyContent: "center" },
   stampPreview: { width: 132, alignItems: "center", gap: 7, paddingVertical: 6, paddingHorizontal: 5 },
+  stampPreviewCompact: { gap: 5, paddingHorizontal: 3 },
   stampImage: { width: 94, height: 94 },
-  stampImageCompact: { width: 78, height: 78 },
   stampFallback: { width: 94, height: 94, borderRadius: 47, borderWidth: 1.5, borderColor: c.wine, alignItems: "center", justifyContent: "center" },
-  stampFallbackCompact: { width: 78, height: 78, borderRadius: 39, borderWidth: 1.5, borderColor: c.wine, alignItems: "center", justifyContent: "center" },
+  stampFallbackCompact: { borderWidth: 1.5, borderColor: c.wine, alignItems: "center", justifyContent: "center" },
   stampTitle: { color: c.ink, fontSize: 13, fontWeight: "700", textAlign: "center", lineHeight: 18, minHeight: 36 },
-  stampTitleCompact: { fontSize: 12, lineHeight: 17, minHeight: 34 },
+  stampTitleCompact: { fontSize: 11, lineHeight: 14, minHeight: 14 },
   stampDate: { color: c.wine, fontSize: 10, fontWeight: "700" },
   passportOwnerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 4 },
   passportQr: { width: 70, height: 70, borderRadius: 12, borderWidth: 1, borderColor: c.gold, alignItems: "center", justifyContent: "center" },
@@ -1843,10 +1897,9 @@ const s = StyleSheet.create({
   recordList: { gap: 14 },
   recordImage: { width: 72, height: 72, borderRadius: 8, backgroundColor: c.cloud },
   recordMeta: { flexDirection: "row", alignItems: "center", gap: 7, borderTopWidth: 1, borderColor: c.line, paddingTop: 12, marginTop: 4 },
-  storePicker: { gap: 10, paddingTop: 4 },
-  storeOption: { width: 110, minHeight: 132, alignItems: "center", justifyContent: "center", gap: 7, padding: 10, borderWidth: 1, borderColor: c.line, borderRadius: 10, backgroundColor: "#FCFAF7" },
+  storePicker: { paddingTop: 4 },
+  storeOption: { minHeight: 132, alignItems: "center", justifyContent: "center", gap: 7, padding: 10, borderWidth: 1, borderColor: c.line, borderRadius: 10, backgroundColor: "#FCFAF7" },
   storeOptionActive: { borderColor: c.gold, backgroundColor: "#F7EFD9" },
-  storeOptionStamp: { width: 60, height: 60 },
   storeOptionText: { color: c.muted, fontSize: 10, fontWeight: "700", textAlign: "center", lineHeight: 14 },
   storeOptionTextActive: { color: c.ink },
   issueStoreRow: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderWidth: 1, borderColor: c.line, borderRadius: 10, backgroundColor: "#FCFAF7" },
