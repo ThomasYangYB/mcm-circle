@@ -84,6 +84,9 @@ const Ctx = createContext<AppState | null>(null);
 const useApp = () => useContext(Ctx)!;
 const storageKey = "mcm-mobile-customers";
 const BRAND_LOGO = require("../logo.png");
+// 화면 헤더용: 원본 PNG에 들어 있던 큰 투명 테두리를 제거한 버전이다.
+// 따라서 로고의 보이는 왼쪽 끝을 본문 시작선에 정확히 맞출 수 있다.
+const BRAND_LOGO_TIGHT = require("../logo-tight.png");
 const RECOMMEND_ICON = require("../recommend.png");
 
 // 스타일을 별도로 주지 않은 안내 문구도 Pretendard를 사용한다.
@@ -352,7 +355,7 @@ function Header({
         {back ? (
           <ChevronLeft color={c.champagne} size={24} strokeWidth={2.6} />
         ) : (
-          <Image source={BRAND_LOGO} style={[s.headerLogo, caMode && s.caHeaderLogo, caMode && !isTablet && s.caHeaderLogoPhone, logoOnly && !isTablet && s.headerHomeLogo]} resizeMode="contain" />
+          <Image source={logoOnly || !caMode ? BRAND_LOGO_TIGHT : BRAND_LOGO} style={[s.headerLogo, caMode && s.caHeaderLogo, caMode && !isTablet && s.caHeaderLogoPhone, logoOnly && !isTablet && s.headerHomeLogo]} resizeMode="contain" />
         )}
       </Pressable>
       {caMode ? (
@@ -432,7 +435,7 @@ function Login() {
       <StatusBar style="light" />
       <View style={[s.loginDark, isTablet && s.loginDarkTablet]}>
         <View style={isTablet ? [s.loginInner, s.loginInnerTablet] : undefined}>
-          <Image source={BRAND_LOGO} style={[s.loginLogo, isTablet && s.loginLogoTablet]} resizeMode="contain" />
+          <Image source={BRAND_LOGO_TIGHT} style={[s.loginLogo, isTablet && s.loginLogoTablet]} resizeMode="contain" />
           <View style={[s.loginHeroSpacer, isTablet && s.loginHeroSpacerTablet]} />
           <Pill>JOURNEY PASSPORT</Pill>
           <Text
@@ -1688,9 +1691,9 @@ const s = StyleSheet.create({
   loginInnerTablet: { maxWidth: 420 },
   // 휴대폰에서는 logo.png 파일 내부의 투명 여백까지 보정해, 실제 로고 픽셀이 제목 시작선과 맞는다.
   // 태블릿은 별도 스타일을 유지한다.
-  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: -70, marginTop: 8 },
+  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: 0, marginTop: 8 },
   // 실제 로고 픽셀은 잘리지 않는다.
-  loginLogoTablet: { width: 370, height: 142, marginLeft: -30, marginTop: 0 },
+  loginLogoTablet: { width: 370, height: 142, marginLeft: 0, marginTop: 0 },
   // 로고와 Journey Passport 배지/본문은 서로 충분히 떨어뜨린다.
   loginHeroSpacer: { height: 30 },
   loginHeroSpacerTablet: { height: 30 },
@@ -1961,7 +1964,7 @@ const s = StyleSheet.create({
     gap: 12,
     backgroundColor: c.ink,
   },
-  headerHome: { height: 80, paddingHorizontal: 2 },
+  headerHome: { height: 92, paddingHorizontal: 8 },
   headerMark: {
     width: 42,
     height: 42,
@@ -1972,9 +1975,9 @@ const s = StyleSheet.create({
   },
   // 헤더 높이를 줄이는 대신 로고가 세로 공간을 더 채우도록 한다.
   headerLogoMark: { width: 186, height: 64, backgroundColor: "transparent" },
-  headerHomeMark: { width: 230, height: 78 },
+  headerHomeMark: { width: 260, height: 88 },
   headerLogo: { width: 180, height: 64 },
-  headerHomeLogo: { width: 226, height: 78, marginLeft: -56 },
+  headerHomeLogo: { width: 260, height: 88, marginLeft: 0 },
   headerMarkText: { color: c.champagne, fontFamily: "Pretendard-Bold", fontWeight: "900", fontSize: 30, lineHeight: 34 },
   headerKicker: {
     color: c.champagne,
