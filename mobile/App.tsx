@@ -357,7 +357,7 @@ function Header({
           {back && <View style={{ flex: 1 }}><Text style={s.headerTitle}>{title}</Text></View>}
           <View style={s.caHeaderIdentity}>
             <View><Text style={s.caHeaderName}>CA 이지원</Text><Text style={s.caHeaderStore}>{currentStore.replace("MCM ", "")}</Text></View>
-            {!back && <Pressable accessibilityLabel="로그아웃" onPress={logout} style={s.caHeaderLogout}><LogOut color={c.ink} size={16} /></Pressable>}
+            {!back && <Pressable accessibilityLabel="로그아웃" onPress={logout} style={s.caHeaderLogout}><LogOut color={c.ink} size={14} /></Pressable>}
           </View>
         </>
       ) : (
@@ -374,6 +374,7 @@ function useResponsive() {
   const { width } = useWindowDimensions();
   return {
     width,
+    isPhone: width < 768,
     isTablet: width >= 768,
     isWide: width >= 1024,
     horizontalPadding: width >= 1024 ? 20 : width >= 640 ? 24 : 16,
@@ -429,11 +430,21 @@ function Login() {
           <Image source={BRAND_LOGO} style={[s.loginLogo, isTablet && s.loginLogoTablet]} resizeMode="contain" />
           <View style={[s.loginHeroSpacer, isTablet && s.loginHeroSpacerTablet]} />
           <Pill>JOURNEY PASSPORT</Pill>
-          <Text style={[s.loginHeadline, isTablet && s.loginHeadlineTablet]}>
-            고객의 모든 여정을{`\n`}더 특별하게 기억합니다
+          <Text
+            numberOfLines={isTablet ? undefined : 1}
+            adjustsFontSizeToFit={!isTablet}
+            minimumFontScale={0.58}
+            style={[s.loginHeadline, isTablet && s.loginHeadlineTablet]}
+          >
+            {isTablet ? "고객의 모든 여정을\n더 특별하게 기억합니다" : "고객의 모든 여정을 더 특별하게 기억합니다"}
           </Text>
-          <Text style={s.darkBody}>
-            방문·상담·구매·케어 이력을{`\n`}하나의 프라이빗 여권에 담습니다.
+          <Text
+            numberOfLines={isTablet ? undefined : 1}
+            adjustsFontSizeToFit={!isTablet}
+            minimumFontScale={0.5}
+            style={s.darkBody}
+          >
+            {isTablet ? "방문·상담·구매·케어 이력을\n하나의 프라이빗 여권에 담습니다." : "방문·상담·구매·케어 이력을 하나의 프라이빗 여권에 담습니다."}
           </Text>
         </View>
       </View>
@@ -591,19 +602,20 @@ function Splash({ onComplete }: { onComplete: () => void }) {
 function CustomerHome() {
   const { customer } = useApp();
   const n = useNavigation<any>();
+  const { isTablet } = useResponsive();
   const [qr, setQr] = useState(false);
   const [stampRowWidth, onStampRowLayout] = useMeasuredWidth();
   const recentStamps = customer.stamps.slice(0, 3);
   const stampGap = 10;
   const stampCardSize = stampRowWidth
-    ? (stampRowWidth - stampGap * (recentStamps.length - 1)) / Math.max(recentStamps.length, 1)
+    ? Math.min(132, (stampRowWidth - stampGap * (recentStamps.length - 1)) / Math.max(recentStamps.length, 1))
     : 124;
   return (
     <Screen>
-      <View style={[s.brandRow, s.homeBrandRow]}>
-        <View style={s.homeLogoPlate}>
-          <Image source={BRAND_LOGO} style={s.homeLogoShadow} resizeMode="contain" />
-          <Image source={BRAND_LOGO} style={s.homeLogo} resizeMode="contain" />
+      <View style={[s.brandRow, s.homeBrandRow, !isTablet && s.homeBrandRowPhone]}>
+        <View style={[s.homeLogoPlate, !isTablet && s.homeLogoPlatePhone]}>
+          <Image source={BRAND_LOGO} style={[s.homeLogoShadow, !isTablet && s.homeLogoPhone]} resizeMode="contain" />
+          <Image source={BRAND_LOGO} style={[s.homeLogo, !isTablet && s.homeLogoPhone]} resizeMode="contain" />
         </View>
       </View>
       <Text style={s.kicker}>MCM JOURNEY PASSPORT</Text>
@@ -732,31 +744,34 @@ function SectionTitle({
     </View>
   );
 }
+function StoreStampImage({ storeName, size, lightPlate = false }: { storeName: string; size: number; lightPlate?: boolean }) {
+  const asset = getStampAsset(storeName);
+  const [failed, setFailed] = useState(false);
+  const outerSize = lightPlate ? size + 22 : size;
+  return (
+    <View style={[s.stampArtwork, { width: outerSize, height: outerSize, borderRadius: outerSize / 2 }, lightPlate && s.issueStampPlate]}>
+      <View style={[s.stampArtworkFallback, { borderRadius: size / 2 }]}>
+        <Stamp color={c.wine} size={Math.max(22, Math.round(size * 0.28))} />
+      </View>
+      {!!asset && !failed && (
+        <Image
+          source={asset}
+          style={{ width: size, height: size }}
+          resizeMode="contain"
+          onError={() => setFailed(true)}
+        />
+      )}
+    </View>
+  );
+}
 function StampCard({ item, compact = false, size }: { item: JourneyStamp; compact?: boolean; size?: number }) {
-  const asset = getStampAsset(item.storeName);
   // 원본(비압축) 카드의 도장:카드 비율(94/132)을 유지해, 카드 폭이 화면에 맞춰
   // 계산되어도 도장이 찌그러지거나 과하게 작아지지 않도록 한다.
   const cardWidth = compact ? size ?? 124 : 132;
   const imageSize = compact ? Math.round(cardWidth * (94 / 132)) : 94;
   return (
     <View style={[s.stampPreview, compact && s.stampPreviewCompact, compact && { width: cardWidth }]}>
-      {asset ? (
-        <Image
-          source={asset}
-          style={compact ? { width: imageSize, height: imageSize } : s.stampImage}
-          resizeMode="contain"
-        />
-      ) : (
-        <View
-          style={
-            compact
-              ? [s.stampFallbackCompact, { width: imageSize, height: imageSize, borderRadius: imageSize / 2 }]
-              : s.stampFallback
-          }
-        >
-          <Stamp color={c.wine} size={24} />
-        </View>
-      )}
+      <StoreStampImage storeName={item.storeName} size={imageSize} />
       <Text
         numberOfLines={compact ? 1 : 2}
         ellipsizeMode="tail"
@@ -918,11 +933,7 @@ function Journey() {
             return (
               <View key={x.id} style={s.journeyStop}>
                 {index < customer.stamps.length - 1 && <View style={s.journeyRail} />}
-                {asset ? (
-                  <Image source={asset} style={s.journeyStampImage} />
-                ) : (
-                  <View style={s.journeyDot}><MapPin size={20} color={c.wine} /></View>
-                )}
+                <StoreStampImage storeName={x.storeName} size={94} />
                 <View style={s.journeyCopy}>
                   <Text style={s.journeyMonth}>{x.issuedAt.slice(0, 7).replace("-", "년 ")}월</Text>
                   <Text style={s.cardTitle}>{x.storeName}</Text>
@@ -1150,7 +1161,7 @@ function CaHome() {
                 onPress={() => setCurrentStore(store)}
                 style={[s.storeOption, selectedStore && s.storeOptionActive, { width: storeItemWidth }]}
               >
-                <Image source={STORE_STAMP_IMAGES[store]} style={{ width: storeIconSize, height: storeIconSize }} />
+                <StoreStampImage storeName={store} size={storeIconSize} />
                 <Text numberOfLines={1} ellipsizeMode="tail" style={[s.storeOptionText, selectedStore && s.storeOptionTextActive]}>
                   {store.replace("MCM ", "")}
                 </Text>
@@ -1441,6 +1452,7 @@ function CaRecommendations() {
 }
 function Consultation() {
   const n = useNavigation<any>();
+  const { isTablet } = useResponsive();
   const { customer, currentStore, addConsultation } = useApp();
   const [purpose, setPurpose] = useState("");
   const [memo, setMemo] = useState("");
@@ -1450,20 +1462,20 @@ function Consultation() {
   const [consented, setConsented] = useState(false);
   return (
     <Screen title="상담 기록 작성" back caHeader>
-      <View style={s.consultationHeading}><Text style={s.kicker}>CONSULTATION RECORD</Text><Text style={s.pageTitle}>상담 기록 작성</Text><Text style={s.body}>{customer.name} 고객의 다음 응대에 필요한 정성적 맥락만 정확하게 기록합니다.</Text></View>
+      <View style={s.consultationHeading}><Text style={s.kicker}>CONSULTATION RECORD</Text><Text style={s.pageTitle}>상담 기록 작성</Text><Text style={s.body}>고객님의 다음 응대에 필요한 정성적 맥락만 정확하게 기록합니다.</Text></View>
       <Card>
         <Text style={s.formLabel}>방문 목적</Text>
-        <TextInput editable value={purpose} onChangeText={setPurpose} placeholder="관심 제품 비교 및 착용감 확인" placeholderTextColor={c.muted} style={s.textInput} />
+        <TextInput editable keyboardType="default" value={purpose} onChangeText={setPurpose} placeholder="관심 제품 비교 및 착용감 확인" placeholderTextColor={c.muted} style={s.textInput} />
         <Text style={s.formLabel}>상담 내용 및 고객 관심사</Text>
-        <TextInput editable multiline value={memo} onChangeText={setMemo} placeholder="오늘 상담에서 나눈 주요 내용과 반응" placeholderTextColor={c.muted} style={[s.textInput, s.consultationLargeInput]} />
+        <TextInput editable keyboardType="default" multiline value={memo} onChangeText={setMemo} placeholder="오늘 상담에서 나눈 주요 내용과 반응" placeholderTextColor={c.muted} style={[s.textInput, s.consultationLargeInput]} />
         <Text style={s.formLabel}>관심 제품</Text>
-        <TextInput editable value={products} onChangeText={setProducts} placeholder="제품명 또는 카테고리" placeholderTextColor={c.muted} style={s.textInput} />
+        <TextInput editable keyboardType="default" value={products} onChangeText={setProducts} placeholder="제품명 또는 카테고리" placeholderTextColor={c.muted} style={s.textInput} />
         <Text style={s.formLabel}>선호 스타일 변화</Text>
-        <TextInput editable value={style} onChangeText={setStyle} placeholder="이전 방문과 달라진 취향" placeholderTextColor={c.muted} style={s.textInput} />
+        <TextInput editable keyboardType="default" value={style} onChangeText={setStyle} placeholder="이전 방문과 달라진 취향" placeholderTextColor={c.muted} style={s.textInput} />
         <Text style={s.formLabel}>후속 응대 시 주의사항</Text>
-        <TextInput editable multiline value={caution} onChangeText={setCaution} placeholder="다음 CA가 반드시 알아야 할 사항" placeholderTextColor={c.muted} style={[s.textInput, s.consultationLargeInput]} />
+        <TextInput editable keyboardType="default" multiline value={caution} onChangeText={setCaution} placeholder="다음 CA가 반드시 알아야 할 사항" placeholderTextColor={c.muted} style={[s.textInput, s.consultationLargeInput]} />
       </Card>
-      <Pressable onPress={() => setConsented(!consented)} style={s.consentBox}><View style={[s.checkbox, consented && s.checkboxChecked]}>{consented && <Text style={s.checkboxTick}>✓</Text>}</View><View style={{ flex: 1 }}><Text style={s.cardTitle}>입력 내용 검토</Text><Text style={s.body}>기록은 상담 지원과 고객 여정에만 활용하며 인사평가나 성과 보상에는 사용하지 않습니다.</Text></View></Pressable>
+      <Pressable onPress={() => setConsented(!consented)} style={s.consentBox}><View style={[s.checkbox, consented && s.checkboxChecked]}>{consented && <Text style={s.checkboxTick}>✓</Text>}</View><View style={{ flex: 1 }}><Text style={s.cardTitle}>입력 내용 검토</Text><Text style={s.body}>{isTablet ? "기록은 상담 지원과 고객 여정에만 활용하며 인사평가나 성과 보상에는 사용하지 않습니다." : "기록은 상담 지원과 고객 여정에만 활용하며\n인사평가나 성과 보상에는 사용하지 않습니다."}</Text></View></Pressable>
       <Button
         onPress={async () => {
           if (!consented) { Alert.alert("확인 필요", "입력 내용 검토에 동의해 주세요."); return; }
@@ -1497,14 +1509,14 @@ function IssueStamp() {
   const [verified, setVerified] = useState(false);
   return (
     <Screen title="방문 스탬프 발급" back preset="wide" caHeader>
-      <View style={s.issueHeading}><Text style={s.kicker}>JOURNEY STAMP</Text><Text style={s.pageTitle}>방문 스탬프 발급</Text><Text style={s.body}>고객, 매장, 담당 CA와 발급 일시가 실제 방문과 일치하는지 확인합니다.</Text></View>
+      <View style={s.issueHeading}><Text style={s.kicker}>JOURNEY STAMP</Text><Text style={s.pageTitle}>방문 스탬프 발급</Text><Text style={s.body}>{isTablet ? "고객, 매장, 담당 CA와 발급 일시가 실제 방문과 일치하는지 확인합니다." : "고객, 매장, 담당 CA와 발급 일시가 실제 방문과 일치하는지 확인"}</Text></View>
       <View style={[s.issueDetailColumns, !isTablet && s.issueDetailColumnsMobile]}>
-        <View style={s.issueVisual}><Image source={STORE_STAMP_IMAGES[currentStore]} style={s.issueVisualStamp} resizeMode="contain" /><Text style={s.issueVisualStore}>{currentStore}</Text><Text style={s.darkBody}>OFFICIAL JOURNEY STAMP</Text></View>
-        <Card><Text style={s.label}>발급 대상 고객</Text><Text style={s.cardTitle}>{customer.name} · {customer.membershipTier === "VIP" ? "VIP 고객" : "일반 고객"}</Text><View style={s.issueDetailLine}><MapPin size={22} color={c.gold} /><View><Text style={s.caption}>방문 매장</Text><Text style={s.cardTitle}>{currentStore}</Text></View></View><View style={s.issueDetailLine}><View><Text style={s.caption}>담당 CA</Text><Text style={s.cardTitle}>이현우 어드바이저</Text></View></View><View><Text style={s.caption}>발급 일시</Text><Text style={s.cardTitle}>{new Date().toLocaleString("ko-KR")}</Text></View></Card>
+        <View style={s.issueVisual}><StoreStampImage storeName={currentStore} size={154} lightPlate /><Text style={s.issueVisualStore}>{currentStore}</Text><Text style={s.darkBody}>OFFICIAL JOURNEY STAMP</Text></View>
+        <View style={s.issueInfoColumn}><Card><Text style={s.label}>발급 대상 고객</Text><Text style={s.cardTitle}>{customer.name} · {customer.membershipTier === "VIP" ? "VIP 고객" : "일반 고객"}</Text><View style={s.issueDetailLine}><MapPin size={22} color={c.gold} /><View><Text style={s.caption}>방문 매장</Text><Text style={s.cardTitle}>{currentStore}</Text></View></View><View style={s.issueDetailLine}><View><Text style={s.caption}>담당 CA</Text><Text style={s.cardTitle}>이현우 어드바이저</Text></View></View><View><Text style={s.caption}>발급 일시</Text><Text style={s.cardTitle}>{new Date().toLocaleString("ko-KR")}</Text></View></Card></View>
       </View>
       <View style={[s.issueActions, !isTablet && s.issueActionsMobile]}>
-        <View style={s.issueAction}><Button onPress={() => { if (verified) { addStamp(customer.id, "visit"); n.navigate("StampSuccess"); } else { setVerified(true); } }} icon={<Stamp color={c.paper} size={22} />}>{verified ? "방문 스탬프 발급" : "중복 발급 여부 확인"}</Button></View>
-        <View style={s.issueAction}><Button secondary onPress={() => n.goBack()}>취소</Button></View>
+        <View style={[s.issueAction, s.issueVisualAction]}><Button onPress={() => { if (verified) { addStamp(customer.id, "visit"); n.navigate("StampSuccess"); } else { setVerified(true); } }} icon={<Stamp color={c.paper} size={22} />}>{verified ? "방문 스탬프 발급" : "중복 발급 여부 확인"}</Button></View>
+        <View style={[s.issueAction, s.issueInfoAction]}><Button secondary onPress={() => n.goBack()}>취소</Button></View>
       </View>
     </Screen>
   );
@@ -1550,7 +1562,9 @@ function CustomerTabs() {
         headerShown: false,
         tabBarActiveTintColor: c.ink,
         tabBarInactiveTintColor: "#8A847C",
-        tabBarStyle: { height: 64, paddingTop: 6 },
+        tabBarStyle: { height: 76, paddingTop: 7, paddingBottom: 9 },
+        tabBarItemStyle: { paddingVertical: 2 },
+        tabBarLabelStyle: { marginBottom: 2 },
         tabBarIcon: ({ color, size }) => {
           if (route.name === "Recommendations") {
             return <Image source={RECOMMEND_ICON} style={{ width: size + 2, height: size + 2, tintColor: color }} resizeMode="contain" />;
@@ -1790,8 +1804,11 @@ const s = StyleSheet.create({
     paddingBottom: 14,
   },
   homeBrandRow: { marginTop: -21, marginLeft: -20, marginBottom: 7, paddingBottom: 1 },
+  homeBrandRowPhone: { marginTop: -28, marginBottom: 0, paddingBottom: 0 },
   homeLogoPlate: { width: 258, height: 96, position: "relative" },
+  homeLogoPlatePhone: { width: 282, height: 100 },
   homeLogo: { width: 258, height: 96 },
+  homeLogoPhone: { width: 282, height: 100 },
   homeLogoShadow: { position: "absolute", width: 258, height: 96, tintColor: c.ink, opacity: 0.78, transform: [{ translateX: 1.5 }, { translateY: 1.5 }] },
   homeGreeting: { color: c.ink, fontFamily: "Pretendard-Bold", fontSize: 25, fontWeight: "800", lineHeight: 32, marginTop: -10, marginBottom: -15 },
   brand: { color: c.ink, fontFamily: "Pretendard-Bold", fontSize: 25, fontWeight: "900", letterSpacing: 4 },
@@ -1873,6 +1890,8 @@ const s = StyleSheet.create({
   stampPreview: { width: 132, alignItems: "center", gap: 7, paddingVertical: 6, paddingHorizontal: 5 },
   stampPreviewCompact: { gap: 5, paddingHorizontal: 3 },
   stampImage: { width: 94, height: 94 },
+  stampArtwork: { alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  stampArtworkFallback: { ...StyleSheet.absoluteFillObject, borderWidth: 1.5, borderColor: c.wine, alignItems: "center", justifyContent: "center", backgroundColor: "#FFFDF9" },
   stampFallback: { width: 94, height: 94, borderRadius: 47, borderWidth: 1.5, borderColor: c.wine, alignItems: "center", justifyContent: "center" },
   stampFallbackCompact: { borderWidth: 1.5, borderColor: c.wine, alignItems: "center", justifyContent: "center" },
   stampTitle: { color: c.ink, fontFamily: "Pretendard-Bold", fontSize: 13, fontWeight: "700", textAlign: "center", lineHeight: 18, minHeight: 36 },
@@ -1967,10 +1986,10 @@ const s = StyleSheet.create({
   },
   headerTitle: { color: c.paper, fontFamily: "Pretendard-Bold", fontSize: 16, fontWeight: "800" },
   caHeaderLogo: { width: 180, height: 64 },
-  caHeaderIdentity: { minWidth: 0, marginLeft: "auto", flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 10 },
+  caHeaderIdentity: { minWidth: 0, marginLeft: "auto", flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 7 },
   caHeaderName: { color: c.paper, fontFamily: "Pretendard-Bold", fontWeight: "800", fontSize: 15 },
   caHeaderStore: { color: "#CFC8BC", fontFamily: "Pretendard", fontSize: 11, marginTop: 2 },
-  caHeaderLogout: { width: 34, height: 34, borderRadius: 7, backgroundColor: c.paper, alignItems: "center", justifyContent: "center" },
+  caHeaderLogout: { width: 29, height: 29, borderRadius: 7, backgroundColor: c.paper, alignItems: "center", justifyContent: "center" },
   segment: {
     flexDirection: "row",
     backgroundColor: "#ECEAE6",
@@ -2040,7 +2059,7 @@ const s = StyleSheet.create({
   emptyJourneyIcon: { width: 96, height: 96, borderRadius: 48, alignItems: "center", justifyContent: "center", backgroundColor: "#E4EEEA" },
   emptyJourneyTitle: { color: c.ink, fontFamily: "Pretendard-Bold", fontSize: 26, fontWeight: "800" },
   emptyJourneyBody: { color: c.muted, fontFamily: "Pretendard", fontSize: 14, lineHeight: 22, textAlign: "center", marginBottom: 10 },
-  caDashboardTop: { gap: 16 },
+  caDashboardTop: { gap: 24 },
   caDashboardTopTablet: { flexDirection: "row", alignItems: "stretch" },
   caScanHero: { flex: 1, minHeight: 200, padding: 22, backgroundColor: c.ink, justifyContent: "flex-start", gap: 18, borderRadius: 8, flexDirection: "column", alignItems: "flex-start" },
   caScanIcon: { width: 60, height: 60, borderRadius: 12, backgroundColor: c.paper, alignItems: "center", justifyContent: "center" },
@@ -2078,12 +2097,16 @@ const s = StyleSheet.create({
   issueDetailColumnsMobile: { flexDirection: "column" },
   issueVisual: { flex: 0.85, minHeight: 350, alignItems: "center", justifyContent: "center", gap: 13, padding: 30, backgroundColor: c.ink },
   issueVisualStamp: { width: 154, height: 154 },
+  issueStampPlate: { backgroundColor: c.paper, padding: 11 },
+  issueInfoColumn: { flex: 1, minWidth: 0 },
   issueVisualStore: { color: c.paper, fontFamily: "Pretendard-Bold", fontSize: 21, fontWeight: "800", textAlign: "center" },
   issueDetailLine: { flexDirection: "row", gap: 12, alignItems: "center", borderTopWidth: 1, borderColor: c.line, paddingTop: 14 },
   issueInfoIcon: { width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center", backgroundColor: "#F4E6C4" },
-  // 두 버튼은 동일 폭으로 한 줄에 배치하고, 넓은 태블릿에서도 과하게 길어지지 않게 한다.
-  issueActions: { flexDirection: "row", gap: 20, width: "100%", maxWidth: 920, alignSelf: "center" },
+  // 아래 두 버튼의 경계는 위의 이미지 카드/정보 카드 사이 경계와 정확히 맞춘다.
+  issueActions: { flexDirection: "row", gap: 28, width: "100%", alignSelf: "stretch" },
   issueAction: { flex: 1, flexBasis: 0, minWidth: 0 },
+  issueVisualAction: { flex: 0.85 },
+  issueInfoAction: { flex: 1 },
   issueActionsMobile: { flexDirection: "column", gap: 12 },
   detailActions: { flexDirection: "row", gap: 12, justifyContent: "flex-end" },
   backChevron: { fontFamily: "Pretendard-Bold", fontSize: 28, lineHeight: 30, fontWeight: "900", verticalAlign: "middle" },
