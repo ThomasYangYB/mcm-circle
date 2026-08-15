@@ -607,7 +607,6 @@ function Splash({ onComplete }: { onComplete: () => void }) {
 function CustomerHome() {
   const { customer } = useApp();
   const n = useNavigation<any>();
-  const { isTablet } = useResponsive();
   const [qr, setQr] = useState(false);
   const [stampRowWidth, onStampRowLayout] = useMeasuredWidth();
   const recentStamps = customer.stamps.slice(0, 3);
@@ -616,13 +615,7 @@ function CustomerHome() {
     ? Math.min(132, (stampRowWidth - stampGap * (recentStamps.length - 1)) / Math.max(recentStamps.length, 1))
     : 124;
   return (
-    <Screen homeHeader={!isTablet}>
-      {isTablet && <View style={[s.brandRow, s.homeBrandRow]}>
-        <View style={s.homeLogoPlate}>
-          <Image source={BRAND_LOGO} style={s.homeLogoShadow} resizeMode="contain" />
-          <Image source={BRAND_LOGO} style={s.homeLogo} resizeMode="contain" />
-        </View>
-      </View>}
+    <Screen homeHeader>
       <Text style={s.kicker}>MCM JOURNEY PASSPORT</Text>
       <Text style={s.homeGreeting}>안녕하세요, {customer.name} 님</Text>
       <Text style={s.body}>국내 MCM 매장에서 기록한 나만의 여정입니다.</Text>
