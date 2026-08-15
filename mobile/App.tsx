@@ -751,7 +751,8 @@ function SectionTitle({
 }
 function StoreStampImage({ storeName, size, lightPlate = false }: { storeName: string; size: number; lightPlate?: boolean }) {
   const asset = getStampAsset(storeName);
-  const outerSize = lightPlate ? size + 22 : size;
+  // 발급 카드의 밝은 원판은 도장보다 사방 4px만 크게 유지한다.
+  const outerSize = lightPlate ? size + 8 : size;
   return (
     <View style={[s.stampArtwork, { width: outerSize, height: outerSize, borderRadius: outerSize / 2 }, lightPlate && s.issueStampPlate]}>
       {!!asset && (
@@ -2100,19 +2101,19 @@ const s = StyleSheet.create({
   issueHeading: { gap: 8, paddingTop: 10, paddingBottom: 14 },
   issueDetailColumns: { flexDirection: "row", gap: 28, alignItems: "stretch" },
   issueDetailColumnsMobile: { flexDirection: "column" },
-  issueVisual: { flex: 1.2, minHeight: 350, alignItems: "center", justifyContent: "center", gap: 13, padding: 30, backgroundColor: c.ink },
+  issueVisual: { flex: 3.55, minHeight: 350, alignItems: "center", justifyContent: "center", gap: 13, padding: 30, backgroundColor: c.ink },
   issueVisualStamp: { width: 154, height: 154 },
   // 검정 카드 위에서만 도장을 분리해 보이게 하는 최소 밝은 원판이다.
   issueStampPlate: { backgroundColor: c.paper, padding: 4 },
-  issueInfoColumn: { flex: 0.8, minWidth: 0 },
+  issueInfoColumn: { flex: 1, minWidth: 0 },
   issueVisualStore: { color: c.paper, fontFamily: "Pretendard-Bold", fontSize: 21, fontWeight: "800", textAlign: "center" },
   issueDetailLine: { flexDirection: "row", gap: 12, alignItems: "center", borderTopWidth: 1, borderColor: c.line, paddingTop: 14 },
   issueInfoIcon: { width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center", backgroundColor: "#F4E6C4" },
   // 아래 두 버튼의 경계는 위의 이미지 카드/정보 카드 사이 경계와 정확히 맞춘다.
   issueActions: { flexDirection: "row", gap: 28, width: "100%", alignSelf: "stretch" },
   issueAction: { flex: 1, flexBasis: 0, minWidth: 0 },
-  issueVisualAction: { flex: 1.2 },
-  issueInfoAction: { flex: 0.8 },
+  issueVisualAction: { flex: 3.55 },
+  issueInfoAction: { flex: 1 },
   issueActionsMobile: { flexDirection: "column", gap: 12 },
   detailActions: { flexDirection: "row", gap: 12, justifyContent: "flex-end" },
   backChevron: { fontFamily: "Pretendard-Bold", fontSize: 28, lineHeight: 30, fontWeight: "900", verticalAlign: "middle" },
