@@ -1612,8 +1612,8 @@ const s = StyleSheet.create({
   loginInner: { flex: 1, maxWidth: 460, alignSelf: "center", width: "100%", justifyContent: "flex-start" },
   loginInnerTablet: { maxWidth: 420 },
   loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: 0, marginTop: 8 },
-  // logo.png 안쪽의 투명 왼쪽 여백을 상쇄해 아래 텍스트 시작선과 맞춘다.
-  loginLogoTablet: { width: 370, height: 142, marginLeft: -70, marginTop: 0 },
+  // 원본 로고가 잘리지 않도록 음수 여백을 사용하지 않는다.
+  loginLogoTablet: { width: 370, height: 142, marginLeft: 0, marginTop: 0 },
   loginHeroSpacer: { height: 12 },
   loginHeroSpacerTablet: { height: 24 },
   loginForm: {
