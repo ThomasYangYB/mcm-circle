@@ -1691,11 +1691,11 @@ const s = StyleSheet.create({
   loginInnerTablet: { maxWidth: 420 },
   // 휴대폰에서는 logo.png 파일 내부의 투명 여백까지 보정해, 실제 로고 픽셀이 제목 시작선과 맞는다.
   // 태블릿은 별도 스타일을 유지한다.
-  // 휴대폰: 본문 시작선(24px)에 보이는 로고의 시작점이 맞도록 보정한다.
-  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: -80, marginTop: 8 },
+  // 휴대폰 로그인: 로고를 검정 히어로 영역의 가로 중앙에 배치한다.
+  loginLogo: { width: 326, height: 123, alignSelf: "center", marginLeft: 0, marginTop: 8 },
   // 실제 로고 픽셀은 잘리지 않는다.
   // 태블릿: 로그인 본문보다 로고가 안쪽으로 보이던 여백을 명확히 제거한다.
-  loginLogoTablet: { width: 370, height: 142, marginLeft: -60, marginTop: 0 },
+  loginLogoTablet: { width: 370, height: 142, alignSelf: "flex-start", marginLeft: -60, marginTop: 0 },
   // 로고와 Journey Passport 배지/본문은 서로 충분히 떨어뜨린다.
   loginHeroSpacer: { height: 30 },
   loginHeroSpacerTablet: { height: 30 },
