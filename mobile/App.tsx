@@ -2113,8 +2113,8 @@ const s = StyleSheet.create({
   // 아래 두 버튼의 경계는 위의 이미지 카드/정보 카드 사이 경계와 정확히 맞춘다.
   issueActions: { flexDirection: "row", gap: 28, width: "100%", alignSelf: "stretch" },
   issueAction: { flex: 1, flexBasis: 0, minWidth: 0 },
-  issueVisualAction: { flex: 0.7 },
-  issueInfoAction: { flex: 1.3 },
+  issueVisualAction: { flex: 1 },
+  issueInfoAction: { flex: 1 },
   issueActionsMobile: { flexDirection: "column", gap: 12 },
   detailActions: { flexDirection: "row", gap: 12, justifyContent: "flex-end" },
   backChevron: { fontFamily: "Pretendard-Bold", fontSize: 28, lineHeight: 30, fontWeight: "900", verticalAlign: "middle" },
