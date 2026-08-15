@@ -60,6 +60,7 @@ import { caApi, hasConnectedBackend } from "./api";
 
 type AuthScreen = "login" | "signup";
 type StoreName = keyof typeof STORE_STAMP_IMAGES;
+type ConsultationDraft = Omit<import("../src/types").ConsultationNote, "id" | "createdAt">;
 type AppState = {
   role: UserRole;
   setRole: (v: UserRole) => void;
@@ -74,7 +75,9 @@ type AppState = {
   currentStore: StoreName;
   setCurrentStore: (store: StoreName) => void;
   addStamp: (id: string, type: JourneyStamp["type"]) => void;
-  addConsultation: (id: string, note: Omit<import("../src/types").ConsultationNote, "id" | "createdAt">) => void;
+  addConsultation: (id: string, note: ConsultationDraft) => void;
+  updateConsultation: (customerId: string, noteId: string, note: ConsultationDraft) => void;
+  deleteConsultation: (customerId: string, noteId: string) => void;
   updateAvatar: (uri: string) => void;
 };
 const Ctx = createContext<AppState | null>(null);
@@ -91,20 +94,20 @@ type FontDefaultComponent = { defaultProps?: { style?: unknown } };
 
 // 국내 공식 지점용 여권 도장. 실제 발급 날짜는 고객 데이터에서 별도로 표시한다.
 const STORE_STAMP_IMAGES: Record<string, number> = {
-  "MCM 하우스 플래그십스토어": require("../stores/journey-stamp-seoul-haus-flagship-96.png"),
-  "MCM 롯데백화점 잠실점": require("../stores/journey-stamp-seoul-lotte-jamsil-96.png"),
-  "MCM 롯데백화점 본점": require("../stores/journey-stamp-seoul-lotte-main-96.png"),
-  "MCM 신라면세점 서울점": require("../stores/journey-stamp-seoul-shilla-duty-free-96.png"),
-  "MCM 신세계면세점 명동점": require("../stores/journey-stamp-seoul-shinsegae-duty-free-main-96.png"),
-  "MCM 현대면세점 무역센터점": require("../stores/journey-stamp-seoul-hyundai-duty-free-trade-center-96.png"),
-  "MCM 롯데면세점 월드타워점": require("../stores/journey-stamp-seoul-lotte-world-tower-duty-free-96.png"),
-  "MCM 롯데면세점 본점": require("../stores/journey-stamp-seoul-lotte-duty-free-main-96.png"),
-  "MCM 파주 프리미엄 아울렛": require("../stores/journey-stamp-paju-premium-outlet-96.png"),
-  "MCM 대구 롯데백화점": require("../stores/journey-stamp-daegu-lotte-96.png"),
-  "MCM 부산 롯데면세점": require("../stores/journey-stamp-busan-lotte-duty-free-96.png"),
-  "MCM 인천 T1 현대면세점": require("../stores/journey-stamp-incheon-t1-hyundai-duty-free-96.png"),
-  "MCM 제주 신라면세점": require("../stores/journey-stamp-jeju-shilla-duty-free-96.png"),
-  "MCM 제주 롯데면세점": require("../stores/journey-stamp-jeju-lotte-duty-free-96.png"),
+  "MCM 하우스 플래그십스토어": require("../stores/journey-stamp-seoul-haus-flagship-transparent.png"),
+  "MCM 롯데백화점 잠실점": require("../stores/journey-stamp-seoul-lotte-jamsil-transparent.png"),
+  "MCM 롯데백화점 본점": require("../stores/journey-stamp-seoul-lotte-main-transparent.png"),
+  "MCM 신라면세점 서울점": require("../stores/journey-stamp-seoul-shilla-duty-free-transparent.png"),
+  "MCM 신세계면세점 명동점": require("../stores/journey-stamp-seoul-shinsegae-duty-free-main-transparent.png"),
+  "MCM 현대면세점 무역센터점": require("../stores/journey-stamp-seoul-hyundai-duty-free-trade-center-transparent.png"),
+  "MCM 롯데면세점 월드타워점": require("../stores/journey-stamp-seoul-lotte-world-tower-duty-free-transparent.png"),
+  "MCM 롯데면세점 본점": require("../stores/journey-stamp-seoul-lotte-duty-free-main-transparent.png"),
+  "MCM 파주 프리미엄 아울렛": require("../stores/journey-stamp-paju-premium-outlet-transparent.png"),
+  "MCM 대구 롯데백화점": require("../stores/journey-stamp-daegu-lotte-transparent.png"),
+  "MCM 부산 롯데면세점": require("../stores/journey-stamp-busan-lotte-duty-free-transparent.png"),
+  "MCM 인천 T1 현대면세점": require("../stores/journey-stamp-incheon-t1-hyundai-duty-free-transparent.png"),
+  "MCM 제주 신라면세점": require("../stores/journey-stamp-jeju-shilla-duty-free-transparent.png"),
+  "MCM 제주 롯데면세점": require("../stores/journey-stamp-jeju-lotte-duty-free-transparent.png"),
 };
 const STORE_NAMES = Object.keys(STORE_STAMP_IMAGES) as StoreName[];
 
@@ -229,7 +232,7 @@ function Provider({ children }: { children: React.ReactNode }) {
                 },
           ),
         ),
-      addConsultation: (id: string, note: Omit<import("../src/types").ConsultationNote, "id" | "createdAt">) =>
+      addConsultation: (id: string, note: ConsultationDraft) =>
         setCustomers((all) =>
           all.map((x) =>
             x.id !== id
@@ -241,6 +244,27 @@ function Provider({ children }: { children: React.ReactNode }) {
                     ...x.consultations,
                   ],
                 },
+          ),
+        ),
+      updateConsultation: (customerId: string, noteId: string, note: ConsultationDraft) =>
+        setCustomers((all) =>
+          all.map((customer) =>
+            customer.id !== customerId
+              ? customer
+              : {
+                  ...customer,
+                  consultations: customer.consultations.map((item) =>
+                    item.id === noteId ? { ...item, ...note } : item,
+                  ),
+                },
+          ),
+        ),
+      deleteConsultation: (customerId: string, noteId: string) =>
+        setCustomers((all) =>
+          all.map((customer) =>
+            customer.id !== customerId
+              ? customer
+              : { ...customer, consultations: customer.consultations.filter((item) => item.id !== noteId) },
           ),
         ),
       updateAvatar: (uri: string) =>
@@ -1309,13 +1333,52 @@ function ConsultationHistory() {
   );
 }
 function ConsultationDetail({ route }: { route: any }) {
-  const { customer } = useApp();
+  const { customer, updateConsultation, deleteConsultation } = useApp();
   const note = customer.consultations.find((item) => item.id === route.params?.noteId);
+  const n = useNavigation<any>();
+  const [editing, setEditing] = useState(false);
+  const [purpose, setPurpose] = useState("");
+  const [content, setContent] = useState("");
+  const [styleChange, setStyleChange] = useState("");
+  const [cautionUpdate, setCautionUpdate] = useState("");
+  useEffect(() => {
+    if (!note) return;
+    setPurpose(note.visitPurpose);
+    setContent(note.content);
+    setStyleChange(note.styleChange ?? "");
+    setCautionUpdate(note.cautionUpdate ?? "");
+  }, [note?.id]);
   if (!note) return <Screen title="상담 기록" back caHeader><Card><Text style={s.body}>상담 기록을 찾을 수 없습니다.</Text></Card></Screen>;
+  const save = () => {
+    updateConsultation(customer.id, note.id, {
+      caName: note.caName,
+      storeName: note.storeName,
+      visitPurpose: purpose.trim() || "상담 방문",
+      content: content.trim() || "상담 내용이 입력되지 않았습니다.",
+      styleChange: styleChange.trim(),
+      cautionUpdate: cautionUpdate.trim(),
+      consentConfirmed: note.consentConfirmed,
+    });
+    setEditing(false);
+    Alert.alert("수정 완료", "상담 기록을 저장했습니다.");
+  };
   return (
     <Screen title="상담 기록" back caHeader>
       <View style={s.consultationHeading}><Text style={s.kicker}>CONSULTATION ARCHIVE</Text><Text style={s.pageTitle}>상담 기록 상세</Text><Text style={s.body}>{note.createdAt.slice(0, 10)} · {note.storeName ?? "국내 MCM 매장"} · {note.caName}</Text></View>
-      <Card><Text style={s.formLabel}>방문 목적</Text><Text style={s.body}>{note.visitPurpose}</Text><Text style={s.formLabel}>상담 내용 및 고객 관심사</Text><Text style={s.body}>{note.content}</Text><Text style={s.formLabel}>선호 스타일 변화</Text><Text style={s.body}>{note.styleChange || "기록 없음"}</Text><Text style={s.formLabel}>후속 응대 시 주의사항</Text><Text style={s.body}>{note.cautionUpdate || "기록 없음"}</Text></Card>
+      <Card>
+        <Text style={s.formLabel}>방문 목적</Text>
+        {editing ? <TextInput editable value={purpose} onChangeText={setPurpose} style={s.textInput} /> : <Text style={s.body}>{note.visitPurpose}</Text>}
+        <Text style={s.formLabel}>상담 내용 및 고객 관심사</Text>
+        {editing ? <TextInput editable multiline value={content} onChangeText={setContent} style={[s.textInput, s.consultationLargeInput]} /> : <Text style={s.body}>{note.content}</Text>}
+        <Text style={s.formLabel}>선호 스타일 변화</Text>
+        {editing ? <TextInput editable value={styleChange} onChangeText={setStyleChange} style={s.textInput} /> : <Text style={s.body}>{note.styleChange || "기록 없음"}</Text>}
+        <Text style={s.formLabel}>후속 응대 시 주의사항</Text>
+        {editing ? <TextInput editable multiline value={cautionUpdate} onChangeText={setCautionUpdate} style={[s.textInput, s.consultationLargeInput]} /> : <Text style={s.body}>{note.cautionUpdate || "기록 없음"}</Text>}
+      </Card>
+      <View style={s.detailActions}>
+        {editing ? <Button onPress={save}>수정 저장</Button> : <Button secondary onPress={() => setEditing(true)}>수정</Button>}
+        <Button secondary onPress={() => Alert.alert("상담 기록 삭제", "삭제한 기록은 되돌릴 수 없습니다.", [{ text: "취소", style: "cancel" }, { text: "삭제", style: "destructive", onPress: () => { deleteConsultation(customer.id, note.id); n.goBack(); } }])}>삭제</Button>
+      </View>
     </Screen>
   );
 }
@@ -1391,15 +1454,15 @@ function Consultation() {
       <View style={s.consultationHeading}><Text style={s.kicker}>CONSULTATION RECORD</Text><Text style={s.pageTitle}>상담 기록 작성</Text><Text style={s.body}>{customer.name} 고객의 다음 응대에 필요한 정성적 맥락만 정확하게 기록합니다.</Text></View>
       <Card>
         <Text style={s.formLabel}>방문 목적</Text>
-        <TextInput value={purpose} onChangeText={setPurpose} placeholder="관심 제품 비교 및 착용감 확인" placeholderTextColor={c.muted} style={s.textInput} />
+        <TextInput editable value={purpose} onChangeText={setPurpose} placeholder="관심 제품 비교 및 착용감 확인" placeholderTextColor={c.muted} style={s.textInput} />
         <Text style={s.formLabel}>상담 내용 및 고객 관심사</Text>
-        <TextInput multiline value={memo} onChangeText={setMemo} placeholder="오늘 상담에서 나눈 주요 내용과 반응" placeholderTextColor={c.muted} style={[s.textInput, s.consultationLargeInput]} />
+        <TextInput editable multiline value={memo} onChangeText={setMemo} placeholder="오늘 상담에서 나눈 주요 내용과 반응" placeholderTextColor={c.muted} style={[s.textInput, s.consultationLargeInput]} />
         <Text style={s.formLabel}>관심 제품</Text>
-        <TextInput value={products} onChangeText={setProducts} placeholder="제품명 또는 카테고리" placeholderTextColor={c.muted} style={s.textInput} />
+        <TextInput editable value={products} onChangeText={setProducts} placeholder="제품명 또는 카테고리" placeholderTextColor={c.muted} style={s.textInput} />
         <Text style={s.formLabel}>선호 스타일 변화</Text>
-        <TextInput value={style} onChangeText={setStyle} placeholder="이전 방문과 달라진 취향" placeholderTextColor={c.muted} style={s.textInput} />
+        <TextInput editable value={style} onChangeText={setStyle} placeholder="이전 방문과 달라진 취향" placeholderTextColor={c.muted} style={s.textInput} />
         <Text style={s.formLabel}>후속 응대 시 주의사항</Text>
-        <TextInput multiline value={caution} onChangeText={setCaution} placeholder="다음 CA가 반드시 알아야 할 사항" placeholderTextColor={c.muted} style={[s.textInput, s.consultationLargeInput]} />
+        <TextInput editable multiline value={caution} onChangeText={setCaution} placeholder="다음 CA가 반드시 알아야 할 사항" placeholderTextColor={c.muted} style={[s.textInput, s.consultationLargeInput]} />
       </Card>
       <Pressable onPress={() => setConsented(!consented)} style={s.consentBox}><View style={[s.checkbox, consented && s.checkboxChecked]}>{consented && <Text style={s.checkboxTick}>✓</Text>}</View><View style={{ flex: 1 }}><Text style={s.cardTitle}>입력 내용 검토</Text><Text style={s.body}>기록은 상담 지원과 고객 여정에만 활용하며 인사평가나 성과 보상에는 사용하지 않습니다.</Text></View></Pressable>
       <Button
@@ -1440,10 +1503,9 @@ function IssueStamp() {
         <View style={s.issueVisual}><Image source={STORE_STAMP_IMAGES[currentStore]} style={s.issueVisualStamp} resizeMode="contain" /><Text style={s.issueVisualStore}>{currentStore}</Text><Text style={s.darkBody}>OFFICIAL JOURNEY STAMP</Text></View>
         <Card><Text style={s.label}>발급 대상 고객</Text><Text style={s.cardTitle}>{customer.name} · {customer.membershipTier === "VIP" ? "VIP 고객" : "일반 고객"}</Text><View style={s.issueDetailLine}><MapPin size={22} color={c.gold} /><View><Text style={s.caption}>방문 매장</Text><Text style={s.cardTitle}>{currentStore}</Text></View></View><View style={s.issueDetailLine}><View><Text style={s.caption}>담당 CA</Text><Text style={s.cardTitle}>이현우 어드바이저</Text></View></View><View><Text style={s.caption}>발급 일시</Text><Text style={s.cardTitle}>{new Date().toLocaleString("ko-KR")}</Text></View></Card>
       </View>
-      <Card><View style={s.row}><View style={s.issueInfoIcon}><Stamp size={24} color={c.gold} /></View><View style={{ flex: 1 }}><Text style={s.cardTitle}>매장 상담 방문</Text><Text style={s.body}>CA가 직접 확인한 한 번의 방문에 대해 발급합니다. 구매·케어 스탬프는 이번 MVP 범위에서 제외합니다.</Text></View></View></Card>
       <View style={[s.issueActions, !isTablet && s.issueActionsMobile]}>
-        <View style={{ flex: 1 }}><Button onPress={() => { if (verified) { addStamp(customer.id, "visit"); n.navigate("StampSuccess"); } else { setVerified(true); } }} icon={<Stamp color={c.paper} size={22} />}>{verified ? "방문 스탬프 발급" : "중복 발급 여부 확인"}</Button></View>
-        <View style={{ flex: 1 }}><Button secondary onPress={() => n.goBack()}>취소</Button></View>
+        <View style={s.issueAction}><Button onPress={() => { if (verified) { addStamp(customer.id, "visit"); n.navigate("StampSuccess"); } else { setVerified(true); } }} icon={<Stamp color={c.paper} size={22} />}>{verified ? "방문 스탬프 발급" : "중복 발급 여부 확인"}</Button></View>
+        <View style={s.issueAction}><Button secondary onPress={() => n.goBack()}>취소</Button></View>
       </View>
     </Screen>
   );
@@ -2020,8 +2082,11 @@ const s = StyleSheet.create({
   issueVisualStore: { color: c.paper, fontFamily: "Pretendard-Bold", fontSize: 21, fontWeight: "800", textAlign: "center" },
   issueDetailLine: { flexDirection: "row", gap: 12, alignItems: "center", borderTopWidth: 1, borderColor: c.line, paddingTop: 14 },
   issueInfoIcon: { width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center", backgroundColor: "#F4E6C4" },
-  issueActions: { flexDirection: "row", gap: 20 },
+  // 두 버튼은 동일 폭으로 한 줄에 배치하고, 넓은 태블릿에서도 과하게 길어지지 않게 한다.
+  issueActions: { flexDirection: "row", gap: 20, width: "100%", maxWidth: 920, alignSelf: "center" },
+  issueAction: { flex: 1, flexBasis: 0, minWidth: 0 },
   issueActionsMobile: { flexDirection: "column", gap: 12 },
+  detailActions: { flexDirection: "row", gap: 12, justifyContent: "flex-end" },
   backChevron: { fontFamily: "Pretendard-Bold", fontSize: 28, lineHeight: 30, fontWeight: "900", verticalAlign: "middle" },
   historyOpenCard: { flexDirection: "row", alignItems: "center", gap: 14, padding: 18, borderWidth: 1, borderColor: c.line, borderRadius: 8, backgroundColor: c.paper },
   historyDetailLink: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", marginTop: 4 },
