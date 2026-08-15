@@ -1805,7 +1805,7 @@ const s = StyleSheet.create({
     borderColor: c.line,
     paddingBottom: 14,
   },
-  homeBrandRow: { marginTop: -21, marginLeft: -20, marginBottom: 7, paddingBottom: 1 },
+  homeBrandRow: { marginTop: -21, marginLeft: -36, marginBottom: 7, paddingBottom: 1 },
   homeBrandRowPhone: { marginTop: -28, marginBottom: 0, paddingBottom: 0 },
   homeLogoPlate: { width: 258, height: 96, position: "relative" },
   homeLogoPlatePhone: { width: 282, height: 100 },
