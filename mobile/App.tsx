@@ -1692,8 +1692,9 @@ const s = StyleSheet.create({
   loginDarkTablet: { width: "42%", flexGrow: 0, flexShrink: 0, height: undefined, paddingTop: 68, paddingBottom: 52, paddingLeft: 46, paddingRight: 24 },
   loginInner: { flex: 1, maxWidth: 460, alignSelf: "center", width: "100%", justifyContent: "flex-start" },
   loginInnerTablet: { maxWidth: 420 },
-  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: -26, marginTop: 8 },
-  // logo.png 파일 자체의 투명 왼쪽 여백(약 30px)만 보정해 본문 시작선에 맞춘다.
+  // 휴대폰에서는 logo.png 파일 내부의 투명 여백까지 보정해, 실제 로고 픽셀이 제목 시작선과 맞는다.
+  // 태블릿은 별도 스타일을 유지한다.
+  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: -50, marginTop: 8 },
   // 실제 로고 픽셀은 잘리지 않는다.
   loginLogoTablet: { width: 370, height: 142, marginLeft: -30, marginTop: 0 },
   // 로고와 Journey Passport 배지/본문은 서로 충분히 떨어뜨린다.
