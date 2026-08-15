@@ -2101,11 +2101,11 @@ const s = StyleSheet.create({
   issueHeading: { gap: 8, paddingTop: 10, paddingBottom: 14 },
   issueDetailColumns: { flexDirection: "row", gap: 28, alignItems: "stretch" },
   issueDetailColumnsMobile: { flexDirection: "column" },
-  issueVisual: { flex: 0.7, minHeight: 350, alignItems: "center", justifyContent: "center", gap: 13, padding: 30, backgroundColor: c.ink },
+  issueVisual: { flex: 1.5, minHeight: 350, alignItems: "center", justifyContent: "center", gap: 13, padding: 30, backgroundColor: c.ink },
   issueVisualStamp: { width: 154, height: 154 },
   // 검정 카드 위에서만 도장을 분리해 보이게 하는 최소 밝은 원판이다.
   issueStampPlate: { backgroundColor: c.paper, padding: 4 },
-  issueInfoColumn: { flex: 1.3, minWidth: 0 },
+  issueInfoColumn: { flex: 1, minWidth: 0 },
   issueInfoCard: { flex: 1, justifyContent: "center" },
   issueVisualStore: { color: c.paper, fontFamily: "Pretendard-Bold", fontSize: 21, fontWeight: "800", textAlign: "center" },
   issueDetailLine: { flexDirection: "row", gap: 12, alignItems: "center", borderTopWidth: 1, borderColor: c.line, paddingTop: 14 },
