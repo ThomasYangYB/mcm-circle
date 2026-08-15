@@ -346,16 +346,16 @@ function Header({
   const { logout, currentStore } = useApp();
   const { isTablet } = useResponsive();
   return (
-    <View style={[s.header, logoOnly && s.headerHome]}>
+    <View style={[s.header, logoOnly && !isTablet && s.headerHome]}>
       <Pressable
         hitSlop={12}
         onPress={() => (back ? n.goBack() : undefined)}
-        style={[s.headerMark, !back && s.headerLogoMark, logoOnly && s.headerHomeMark]}
+        style={[s.headerMark, !back && s.headerLogoMark, logoOnly && !isTablet && s.headerHomeMark]}
       >
         {back ? (
           <ChevronLeft color={c.champagne} size={24} strokeWidth={2.6} />
         ) : (
-          <Image source={logoOnly || !caMode ? BRAND_LOGO_TIGHT : BRAND_LOGO} style={[s.headerLogo, caMode && s.caHeaderLogo, caMode && !isTablet && s.caHeaderLogoPhone, logoOnly && s.headerHomeLogo]} resizeMode="contain" />
+          <Image source={logoOnly || !caMode ? BRAND_LOGO_TIGHT : BRAND_LOGO} style={[s.headerLogo, caMode && s.caHeaderLogo, caMode && !isTablet && s.caHeaderLogoPhone, logoOnly && !isTablet && s.headerHomeLogo]} resizeMode="contain" />
         )}
       </Pressable>
       {caMode ? (
@@ -1692,7 +1692,7 @@ const s = StyleSheet.create({
   // 휴대폰에서는 logo.png 파일 내부의 투명 여백까지 보정해, 실제 로고 픽셀이 제목 시작선과 맞는다.
   // 태블릿은 별도 스타일을 유지한다.
   // 휴대폰: 본문 시작선(24px)에 보이는 로고의 시작점이 맞도록 보정한다.
-  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: -40, marginTop: 8 },
+  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: -80, marginTop: 8 },
   // 실제 로고 픽셀은 잘리지 않는다.
   // 태블릿: 로그인 본문보다 로고가 안쪽으로 보이던 여백을 명확히 제거한다.
   loginLogoTablet: { width: 370, height: 142, marginLeft: -60, marginTop: 0 },
@@ -1966,7 +1966,7 @@ const s = StyleSheet.create({
     gap: 12,
     backgroundColor: c.ink,
   },
-  headerHome: { height: 104, paddingHorizontal: 8 },
+  headerHome: { height: 110, paddingHorizontal: 4 },
   headerMark: {
     width: 42,
     height: 42,
@@ -1977,10 +1977,10 @@ const s = StyleSheet.create({
   },
   // 헤더 높이를 줄이는 대신 로고가 세로 공간을 더 채우도록 한다.
   headerLogoMark: { width: 186, height: 64, backgroundColor: "transparent" },
-  headerHomeMark: { width: 290, height: 100 },
+  headerHomeMark: { width: 340, height: 106 },
   headerLogo: { width: 180, height: 64 },
-  // 홈 로고의 실제 그림 시작점이 아래 본문(좌측 30px)과 맞도록 25px 이동.
-  headerHomeLogo: { width: 290, height: 100, marginLeft: -25 },
+  // 휴대폰 홈: 큰 로고의 보이는 왼쪽 끝을 본문 시작선으로 보정한다.
+  headerHomeLogo: { width: 340, height: 106, marginLeft: -55 },
   headerMarkText: { color: c.champagne, fontFamily: "Pretendard-Bold", fontWeight: "900", fontSize: 30, lineHeight: 34 },
   headerKicker: {
     color: c.champagne,
