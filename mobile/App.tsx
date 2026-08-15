@@ -1512,7 +1512,7 @@ function IssueStamp() {
     <Screen title="방문 스탬프 발급" back preset="wide" caHeader>
       <View style={s.issueHeading}><Text style={s.kicker}>JOURNEY STAMP</Text><Text style={s.pageTitle}>방문 스탬프 발급</Text><Text style={s.body}>{isTablet ? "고객, 매장, 담당 CA와 발급 일시가 실제 방문과 일치하는지 확인합니다." : "고객, 매장, 담당 CA와 발급 일시가 실제 방문과 일치하는지 확인"}</Text></View>
       <View style={[s.issueDetailColumns, !isTablet && s.issueDetailColumnsMobile]}>
-        <View style={s.issueVisual}><StoreStampImage storeName={currentStore} size={126} lightPlate /><Text style={s.issueVisualStore}>{currentStore}</Text><Text style={s.darkBody}>OFFICIAL JOURNEY STAMP</Text></View>
+        <View style={s.issueVisual}><StoreStampImage storeName={currentStore} size={110} lightPlate /><Text style={s.issueVisualStore}>{currentStore}</Text><Text style={s.darkBody}>OFFICIAL JOURNEY STAMP</Text></View>
         <View style={s.issueInfoColumn}><View style={[s.card, s.issueInfoCard]}><Text style={s.label}>발급 대상 고객</Text><Text style={s.cardTitle}>{customer.name} · {customer.membershipTier === "VIP" ? "VIP 고객" : "일반 고객"}</Text><View style={s.issueDetailLine}><MapPin size={22} color={c.gold} /><View><Text style={s.caption}>방문 매장</Text><Text style={s.cardTitle}>{currentStore}</Text></View></View><View style={s.issueDetailLine}><View><Text style={s.caption}>담당 CA</Text><Text style={s.cardTitle}>이현우 어드바이저</Text></View></View><View><Text style={s.caption}>발급 일시</Text><Text style={s.cardTitle}>{new Date().toLocaleString("ko-KR")}</Text></View></View></View>
       </View>
       <View style={[s.issueActions, !isTablet && s.issueActionsMobile]}>
@@ -2104,7 +2104,7 @@ const s = StyleSheet.create({
   issueVisual: { flex: 1.5, minHeight: 350, alignItems: "center", justifyContent: "center", gap: 13, padding: 30, backgroundColor: c.ink },
   issueVisualStamp: { width: 154, height: 154 },
   // 검정 카드 위에서만 도장을 분리해 보이게 하는 최소 밝은 원판이다.
-  issueStampPlate: { backgroundColor: c.paper, padding: 4 },
+  issueStampPlate: { backgroundColor: c.paper, padding: 4, marginBottom: 12 },
   issueInfoColumn: { flex: 1, minWidth: 0 },
   issueInfoCard: { flex: 1, justifyContent: "center" },
   issueVisualStore: { color: c.paper, fontFamily: "Pretendard-Bold", fontSize: 21, fontWeight: "800", textAlign: "center" },
