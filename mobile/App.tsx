@@ -328,7 +328,7 @@ function Header({
           {back && <View style={{ flex: 1 }}><Text style={s.headerTitle}>{title}</Text></View>}
           <View style={s.caHeaderIdentity}>
             <View><Text style={s.caHeaderName}>CA 이지원</Text><Text style={s.caHeaderStore}>{currentStore.replace("MCM ", "")}</Text></View>
-            {!back && <Pressable accessibilityLabel="로그아웃" onPress={logout} style={s.caHeaderLogout}><LogOut color={c.ink} size={20} /></Pressable>}
+            {!back && <Pressable accessibilityLabel="로그아웃" onPress={logout} style={s.caHeaderLogout}><LogOut color={c.ink} size={16} /></Pressable>}
           </View>
         </>
       ) : (
@@ -1611,8 +1611,8 @@ const s = StyleSheet.create({
   loginDarkTablet: { width: "42%", flexGrow: 0, flexShrink: 0, height: undefined, paddingTop: 68, paddingBottom: 52, paddingLeft: 46, paddingRight: 24 },
   loginInner: { flex: 1, maxWidth: 460, alignSelf: "center", width: "100%", justifyContent: "flex-start" },
   loginInnerTablet: { maxWidth: 420 },
-  loginLogo: { width: 360, height: 136, alignSelf: "flex-start", marginLeft: -42, marginTop: 8 },
-  loginLogoTablet: { width: 430, height: 164, marginLeft: -72, marginTop: -4 },
+  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: 0, marginTop: 8 },
+  loginLogoTablet: { width: 370, height: 142, marginLeft: 0, marginTop: 0 },
   loginHeroSpacer: { height: 12 },
   loginHeroSpacerTablet: { height: 24 },
   loginForm: {
@@ -1833,7 +1833,7 @@ const s = StyleSheet.create({
   price: { color: c.gold, fontSize: 13, fontWeight: "800", marginTop: 5 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 14 },
   quick: {
-    width: "48%",
+    width: "49.45%",
     minHeight: 128,
     backgroundColor: c.paper,
     borderWidth: 1,
@@ -1869,7 +1869,7 @@ const s = StyleSheet.create({
     borderRadius: 6,
   },
   header: {
-    height: 62,
+    height: 72,
     paddingHorizontal: 16,
     flexDirection: "row",
     alignItems: "center",
@@ -1884,8 +1884,8 @@ const s = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: c.darkPanel,
   },
-  headerLogoMark: { width: 112, backgroundColor: "transparent" },
-  headerLogo: { width: 110, height: 42 },
+  headerLogoMark: { width: 164, height: 60, backgroundColor: "transparent" },
+  headerLogo: { width: 160, height: 60 },
   headerMarkText: { color: c.champagne, fontWeight: "900", fontSize: 30, lineHeight: 34 },
   headerKicker: {
     color: c.champagne,
@@ -1894,11 +1894,11 @@ const s = StyleSheet.create({
     letterSpacing: 1,
   },
   headerTitle: { color: c.paper, fontFamily: "Pretendard-Bold", fontSize: 16, fontWeight: "800" },
-  caHeaderLogo: { width: 116, height: 46 },
+  caHeaderLogo: { width: 160, height: 60 },
   caHeaderIdentity: { minWidth: 0, marginLeft: "auto", flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 10 },
   caHeaderName: { color: c.paper, fontFamily: "Pretendard-Bold", fontWeight: "800", fontSize: 15 },
   caHeaderStore: { color: "#CFC8BC", fontFamily: "Pretendard", fontSize: 11, marginTop: 2 },
-  caHeaderLogout: { width: 42, height: 42, borderRadius: 8, backgroundColor: c.paper, alignItems: "center", justifyContent: "center" },
+  caHeaderLogout: { width: 34, height: 34, borderRadius: 7, backgroundColor: c.paper, alignItems: "center", justifyContent: "center" },
   segment: {
     flexDirection: "row",
     backgroundColor: "#ECEAE6",
