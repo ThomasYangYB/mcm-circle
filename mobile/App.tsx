@@ -32,6 +32,7 @@ import {
   Award,
   BookOpen,
   CalendarDays,
+  ChevronLeft,
   ChevronRight,
   Compass,
   FileText,
@@ -271,7 +272,15 @@ function Card({
 }) {
   return <View style={[s.card, dark && s.darkCard]}>{children}</View>;
 }
-function Header({ title, back = false }: { title: string; back?: boolean }) {
+function Header({
+  title,
+  back = false,
+  caMode = false,
+}: {
+  title: string;
+  back?: boolean;
+  caMode?: boolean;
+}) {
   const n = useNavigation<any>();
   return (
     <View style={s.header}>
@@ -280,12 +289,25 @@ function Header({ title, back = false }: { title: string; back?: boolean }) {
         onPress={() => (back ? n.goBack() : undefined)}
         style={[s.headerMark, !back && s.headerLogoMark]}
       >
-        {back ? <Text style={s.headerMarkText}>‹</Text> : <Image source={BRAND_LOGO} style={s.headerLogo} resizeMode="contain" />}
+        {back ? (
+          <ChevronLeft color={c.champagne} size={32} strokeWidth={2.6} />
+        ) : (
+          <Image source={BRAND_LOGO} style={[s.headerLogo, caMode && s.caHeaderLogo]} resizeMode="contain" />
+        )}
       </Pressable>
-      <View style={{ flex: 1 }}>
-        <Text style={s.headerKicker}>MCM PRIVATE CIRCLE</Text>
-        <Text style={s.headerTitle}>{title}</Text>
-      </View>
+      {caMode ? (
+        <>
+          {back && <View style={{ flex: 1 }}><Text style={s.headerTitle}>{title}</Text></View>}
+          <View style={s.caHeaderIdentity}>
+            <Text style={s.caHeaderName}>이현우 CA</Text>
+          </View>
+        </>
+      ) : (
+        <View style={{ flex: 1 }}>
+          <Text style={s.headerKicker}>MCM PRIVATE CIRCLE</Text>
+          <Text style={s.headerTitle}>{title}</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -304,18 +326,20 @@ function Screen({
   title,
   back = false,
   preset = "content",
+  caHeader = false,
 }: {
   children: React.ReactNode;
   title?: string;
   back?: boolean;
   preset?: ScreenPreset;
+  caHeader?: boolean;
 }) {
   const { horizontalPadding } = useResponsive();
   const maxWidth = preset === "compact" ? 560 : preset === "wide" ? 1180 : 820;
   return (
     <SafeAreaView style={s.safe}>
       <StatusBar style="dark" />
-      {title && <Header title={title} back={back} />}
+      {(title || caHeader) && <Header title={title ?? ""} back={back} caMode={caHeader} />}
       <ScrollView
         contentContainerStyle={s.scrollOuter}
         keyboardShouldPersistTaps="handled"
@@ -343,9 +367,9 @@ function Login() {
     <SafeAreaView style={[s.safe, s.login, isTablet && s.loginTablet]}>
       <StatusBar style="light" />
       <View style={[s.loginDark, isTablet && s.loginDarkTablet]}>
-        <View style={isTablet ? s.loginInner : undefined}>
+        <View style={isTablet ? [s.loginInner, s.loginInnerTablet] : undefined}>
           <Image source={BRAND_LOGO} style={[s.loginLogo, isTablet && s.loginLogoTablet]} resizeMode="contain" />
-          <View style={s.loginHeroSpacer} />
+          <View style={[s.loginHeroSpacer, isTablet && s.loginHeroSpacerTablet]} />
           <Pill>JOURNEY PASSPORT</Pill>
           <Text style={[s.loginHeadline, isTablet && s.loginHeadlineTablet]}>
             고객의 모든 여정을{`\n`}더 특별하게 기억합니다
@@ -445,7 +469,7 @@ function SignUp() {
             onPress={() => setAuthScreen("login")}
             style={s.backText}
           >
-            <Text style={s.link}>‹ 로그인으로 돌아가기</Text>
+            <Text style={s.link}><Text style={s.backChevron}>‹</Text> 로그인으로 돌아가기</Text>
           </Pressable>
           <Text style={s.signupKicker}>PRIVATE CIRCLE MEMBERSHIP</Text>
           <Text style={s.pageTitle}>회원가입</Text>
@@ -710,18 +734,24 @@ function ProductList({ products }: { products: typeof MOCK_PRODUCTS }) {
 }
 function Quick({
   icon,
+  imageIcon,
   title,
   onPress,
+  bottomAligned = false,
 }: {
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
+  imageIcon?: number;
   title: string;
   onPress: () => void;
+  bottomAligned?: boolean;
 }) {
   return (
-    <Pressable onPress={onPress} style={s.quick}>
-      {icon}
-      <Text style={s.cardTitle}>{title}</Text>
-      <Text style={s.caption}>자세히 보기</Text>
+    <Pressable onPress={onPress} style={[s.quick, bottomAligned && s.quickBottomAligned]}>
+      {imageIcon ? <Image source={imageIcon} style={s.quickImageIcon} resizeMode="contain" /> : icon}
+      <View style={bottomAligned && s.quickBottomCopy}>
+        <Text style={s.cardTitle}>{title}</Text>
+        {!bottomAligned && <Text style={s.caption}>자세히 보기</Text>}
+      </View>
     </Pressable>
   );
 }
@@ -1038,10 +1068,10 @@ function CaHome() {
     </>
   );
   return (
-    <Screen title="CA Workstation" preset="wide">
+    <Screen preset="wide" caHeader>
       {isTablet ? (
         <View style={s.caColumns}>
-          <View style={s.caMain}>{actions}</View>
+          <View style={[s.caMain, s.caContentStart]}>{actions}</View>
           <View style={s.caSide}>
             {clientList}
             <Pressable
@@ -1056,7 +1086,7 @@ function CaHome() {
         </View>
       ) : (
         <>
-          {actions}
+          <View style={s.caContentStart}>{actions}</View>
           {clientList}
           <Pressable
             accessibilityRole="button"
@@ -1143,8 +1173,9 @@ function CustomerDetail() {
       </Card>
       <View style={s.grid}>
         <Quick
-          icon={<Sparkles color={c.gold} />}
-          title="자세한 AI 응대 브리프"
+          imageIcon={RECOMMEND_ICON}
+          title="AI 응대 브리프"
+          bottomAligned
           onPress={() => n.navigate("Brief")}
         />
         <Quick
@@ -1167,15 +1198,6 @@ function CustomerDetail() {
   );
   const context = (
     <>
-      <SectionTitle title="응대 맥락 & 선호" />
-      <Card>
-        <Text style={s.label}>방문 목적</Text>
-        <Text style={s.body}>{customer.purchasePurpose}</Text>
-        <Text style={s.label}>선호 스타일</Text>
-        <Text style={s.body}>
-          {customer.preferredStyle.map((x) => `#${x}`).join("  ")}
-        </Text>
-      </Card>
       {customer.cautionNotes && (
         <View style={s.cautionCard}>
           <Text style={[s.cardTitle, { color: c.wine }]}>
@@ -1184,10 +1206,23 @@ function CustomerDetail() {
           <Text style={s.body}>{customer.cautionNotes}</Text>
         </View>
       )}
+      <SectionTitle title="최근 상담과 후속 메모" />
+      {customer.consultations.slice(0, 2).map((note) => (
+        <View key={note.id} style={s.consultationMemoCard}>
+          <Text style={s.consultationMemoDate}>
+            {note.createdAt.slice(0, 10).replace(/-/g, ". ")} · {note.visitPurpose}
+          </Text>
+          <Text style={s.consultationMemoText}>{note.content}</Text>
+          {note.cautionUpdate ? <Text style={s.consultationMemoFollow}>후속 · {note.cautionUpdate}</Text> : null}
+        </View>
+      ))}
+      {!customer.consultations.length && (
+        <Card><Text style={s.body}>아직 저장된 상담 기록이 없습니다.</Text></Card>
+      )}
     </>
   );
   return (
-    <Screen title={`${customer.name} 님 상세`} back preset="wide">
+    <Screen title={`${customer.name} 님 상세`} back preset="wide" caHeader>
       {isTablet ? (
         <View style={s.caColumns}>
           <View style={s.caMain}>{profile}</View>
@@ -1205,25 +1240,36 @@ function CustomerDetail() {
 function Brief() {
   const { customer } = useApp();
   const brief = MOCK_BRIEFS[customer.id];
+  const suggestions = [
+    "최근 상담 맥락부터 자연스럽게 이어간다.",
+    "재방문 시 선호 색상과 관심 제품 재고를 먼저 확인한다.",
+    "비교 시간은 충분히 두고, 고객의 질문 후 제품을 제안한다.",
+  ];
   return (
-    <Screen title="자세한 AI 응대 브리프" back>
-      <Card dark>
-        <Text style={s.darkKicker}>HUMAN-FIRST AI</Text>
-        <Text style={s.passportName}>응대 전략</Text>
-        <Text style={s.darkBody}>
-          {brief?.suggestedApproach ?? "고객의 최신 여정을 우선 확인해 주세요."}
-        </Text>
-      </Card>
-      <SectionTitle title="분석 근거" />
-      {(brief?.basis ?? []).map((x) => (
-        <Card key={x}>
-          <Text style={s.body}>• {x}</Text>
-        </Card>
-      ))}
+    <Screen title="AI 응대 브리프" back caHeader>
+      <View style={s.briefHeading}>
+        <Text style={s.kicker}>AI JOURNEY BRIEF</Text>
+        <Text style={s.pageTitle}>오늘의 상담 브리프</Text>
+        <Text style={s.body}>{customer.name} 님 · {customer.stamps[0]?.storeName ?? "국내 MCM 매장"} · 실제 여정 기록 기반</Text>
+      </View>
+      <View style={s.briefHero}>
+        <View style={s.row}><View style={s.briefIcon}><Sparkles color={c.ink} size={24} /></View><View style={{ flex: 1 }}><Text style={s.passportName}>상담 맥락 요약</Text><Text style={s.darkBody}>데모 데이터 기반 생성</Text></View><Pill tone="forest">DEMO AI</Pill></View>
+        <Text style={s.briefSummary}>{brief?.summary ?? "고객의 최근 여정을 분석하는 중입니다."}</Text>
+      </View>
       <Card>
-        <Text style={s.label}>데이터 출처</Text>
-        <Text style={s.body}>{brief?.dataSource.join(", ")}</Text>
+        <View style={s.row}><Sparkles color={c.gold} size={24} /><Text style={s.sectionTitle}>응대 제안</Text></View>
+        {suggestions.map((item, index) => <View key={item} style={s.briefSuggestion}><View style={s.briefNumber}><Text style={s.briefNumberText}>{index + 1}</Text></View><Text style={s.body}>{item}</Text></View>)}
       </Card>
+      <Card>
+        <View style={s.row}><FileText color={c.gold} size={23} /><Text style={s.cardTitle}>근거 기록</Text></View>
+        <Text style={s.body}>{brief?.basis.slice(0, 3).join(" · ")}</Text>
+      </Card>
+      <View style={s.cautionCard}>
+        <Text style={[s.cardTitle, { color: c.wine }]}>응대 시 주의사항</Text>
+        <Text style={s.body}>{brief?.cautions[0] ?? "고객의 반응을 먼저 확인해 주세요."}</Text>
+      </View>
+      <View style={s.aiDisclosure}><Text style={s.aiDisclosureText}>AI는 고객과 직접 대화하지 않습니다. 이 브리프는 실제 기록을 요약한 참고 정보이며 최종 응대 방식은 CA가 결정합니다.</Text></View>
+      <Button secondary onPress={() => Alert.alert("재생성 완료", "최신 상담 기록을 기준으로 브리프를 다시 만들었습니다.")}>최신 기록으로 다시 생성</Button>
     </Screen>
   );
 }
@@ -1239,19 +1285,32 @@ function CaRecommendations() {
 }
 function Consultation() {
   const n = useNavigation<any>();
+  const { customer } = useApp();
+  const [purpose, setPurpose] = useState("");
   const [memo, setMemo] = useState("");
+  const [products, setProducts] = useState("");
+  const [style, setStyle] = useState("");
+  const [caution, setCaution] = useState("");
+  const [consented, setConsented] = useState(false);
   return (
-    <Screen title="오늘의 상담 기록" back>
-      <Text style={s.label}>상담 메모</Text>
-      <TextInput
-        multiline
-        value={memo}
-        onChangeText={setMemo}
-        placeholder="고객의 방문 목적과 반응을 기록하세요."
-        style={[s.textInput, { height: 180, textAlignVertical: "top" }]}
-      />
+    <Screen title="상담 기록 작성" back caHeader>
+      <View style={s.consultationHeading}><Text style={s.kicker}>CONSULTATION RECORD</Text><Text style={s.pageTitle}>상담 기록 작성</Text><Text style={s.body}>{customer.name} 고객의 다음 응대에 필요한 정성적 맥락만 정확하게 기록합니다.</Text></View>
+      <Card>
+        <Text style={s.formLabel}>방문 목적</Text>
+        <TextInput value={purpose} onChangeText={setPurpose} placeholder="관심 제품 비교 및 착용감 확인" placeholderTextColor={c.muted} style={s.textInput} />
+        <Text style={s.formLabel}>상담 내용 및 고객 관심사</Text>
+        <TextInput multiline value={memo} onChangeText={setMemo} placeholder="오늘 상담에서 나눈 주요 내용과 반응" placeholderTextColor={c.muted} style={[s.textInput, s.consultationLargeInput]} />
+        <Text style={s.formLabel}>관심 제품</Text>
+        <TextInput value={products} onChangeText={setProducts} placeholder="제품명 또는 카테고리" placeholderTextColor={c.muted} style={s.textInput} />
+        <Text style={s.formLabel}>선호 스타일 변화</Text>
+        <TextInput value={style} onChangeText={setStyle} placeholder="이전 방문과 달라진 취향" placeholderTextColor={c.muted} style={s.textInput} />
+        <Text style={s.formLabel}>후속 응대 시 주의사항</Text>
+        <TextInput multiline value={caution} onChangeText={setCaution} placeholder="다음 CA가 반드시 알아야 할 사항" placeholderTextColor={c.muted} style={[s.textInput, s.consultationLargeInput]} />
+      </Card>
+      <Pressable onPress={() => setConsented(!consented)} style={s.consentBox}><View style={[s.checkbox, consented && s.checkboxChecked]}>{consented && <Text style={s.checkboxTick}>✓</Text>}</View><View style={{ flex: 1 }}><Text style={s.cardTitle}>입력 내용 검토</Text><Text style={s.body}>기록은 상담 지원과 고객 여정에만 활용하며 인사평가나 성과 보상에는 사용하지 않습니다.</Text></View></Pressable>
       <Button
         onPress={() => {
+          if (!consented) { Alert.alert("확인 필요", "입력 내용 검토에 동의해 주세요."); return; }
           Alert.alert("저장 완료", "상담 기록이 고객 이력에 저장되었습니다.");
           n.goBack();
         }}
@@ -1264,22 +1323,20 @@ function Consultation() {
 function IssueStamp() {
   const { customer, addStamp, currentStore } = useApp();
   const n = useNavigation<any>();
+  const { isTablet } = useResponsive();
+  const [verified, setVerified] = useState(false);
   return (
-    <Screen title="방문 스탬프 발급" back>
-      <Card dark>
-        <Text style={s.darkKicker}>ISSUE JOURNEY STAMP</Text>
-        <Text style={s.passportName}>{customer.name} 님</Text>
-      </Card>
-      <View style={s.issueStoreRow}>
-        <Image source={STORE_STAMP_IMAGES[currentStore]} style={s.issueStoreStamp} />
-        <View style={{ flex: 1 }}>
-          <Text style={s.kicker}>ISSUING FROM</Text>
-          <Text style={s.cardTitle}>{currentStore}</Text>
-          <Text style={s.body}>이 지점의 도장으로 발급됩니다.</Text>
-        </View>
+    <Screen title="방문 스탬프 발급" back preset="wide" caHeader>
+      <View style={s.issueHeading}><Text style={s.kicker}>JOURNEY STAMP</Text><Text style={s.pageTitle}>방문 스탬프 발급</Text><Text style={s.body}>고객, 매장, 담당 CA와 발급 일시가 실제 방문과 일치하는지 확인합니다.</Text></View>
+      <View style={[s.issueDetailColumns, !isTablet && s.issueDetailColumnsMobile]}>
+        <View style={s.issueVisual}><Image source={STORE_STAMP_IMAGES[currentStore]} style={s.issueVisualStamp} resizeMode="contain" /><Text style={s.issueVisualStore}>{currentStore}</Text><Text style={s.darkBody}>OFFICIAL JOURNEY STAMP</Text></View>
+        <Card><Text style={s.label}>발급 대상 고객</Text><Text style={s.cardTitle}>{customer.name} · {customer.membershipTier === "VIP" ? "VIP 고객" : "일반 고객"}</Text><View style={s.issueDetailLine}><MapPin size={22} color={c.gold} /><View><Text style={s.caption}>방문 매장</Text><Text style={s.cardTitle}>{currentStore}</Text></View></View><View style={s.issueDetailLine}><View><Text style={s.caption}>담당 CA</Text><Text style={s.cardTitle}>이현우 어드바이저</Text></View></View><View><Text style={s.caption}>발급 일시</Text><Text style={s.cardTitle}>{new Date().toLocaleString("ko-KR")}</Text></View></Card>
       </View>
-      <Text style={s.body}>고객의 방문을 확인한 뒤 여권에 도장을 발급합니다.</Text>
-      <Button onPress={() => { addStamp(customer.id, "visit"); n.navigate("StampSuccess"); }} icon={<Stamp color={c.paper} size={22} />}>매장 방문 스탬프 발급</Button>
+      <Card><View style={s.row}><View style={s.issueInfoIcon}><Stamp size={24} color={c.gold} /></View><View style={{ flex: 1 }}><Text style={s.cardTitle}>매장 상담 방문</Text><Text style={s.body}>CA가 직접 확인한 한 번의 방문에 대해 발급합니다. 구매·케어 스탬프는 이번 MVP 범위에서 제외합니다.</Text></View></View></Card>
+      <View style={[s.issueActions, !isTablet && s.issueActionsMobile]}>
+        <View style={{ flex: 1 }}><Button onPress={() => { if (verified) { addStamp(customer.id, "visit"); n.navigate("StampSuccess"); } else { setVerified(true); } }} icon={<Stamp color={c.paper} size={22} />}>{verified ? "방문 스탬프 발급" : "중복 발급 여부 확인"}</Button></View>
+        <View style={{ flex: 1 }}><Button secondary onPress={() => n.goBack()}>취소</Button></View>
+      </View>
     </Screen>
   );
 }
@@ -1441,11 +1498,13 @@ const s = StyleSheet.create({
   login: { backgroundColor: c.ink },
   loginTablet: { flexDirection: "row" },
   loginDark: { height: 348, flexGrow: 0, flexShrink: 0, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 26, backgroundColor: c.ink },
-  loginDarkTablet: { width: "45%", flexGrow: 0, flexShrink: 0, height: undefined, padding: 48 },
+  loginDarkTablet: { width: "42%", flexGrow: 0, flexShrink: 0, height: undefined, paddingTop: 68, paddingBottom: 52, paddingLeft: 46, paddingRight: 24 },
   loginInner: { flex: 1, maxWidth: 460, alignSelf: "center", width: "100%", justifyContent: "flex-start" },
-  loginLogo: { width: 308, height: 117, alignSelf: "flex-start", marginLeft: -18, marginTop: 7 },
-  loginLogoTablet: { width: 340, height: 130, marginLeft: 0, marginTop: 14 },
+  loginInnerTablet: { maxWidth: 420 },
+  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: -20, marginTop: 12 },
+  loginLogoTablet: { width: 370, height: 142, marginLeft: 0, marginTop: 0 },
   loginHeroSpacer: { height: 12 },
+  loginHeroSpacerTablet: { height: 24 },
   loginForm: {
     flexGrow: 1,
     backgroundColor: c.paper,
@@ -1455,8 +1514,8 @@ const s = StyleSheet.create({
   loginFormTablet: {
     flex: 1,
     justifyContent: "flex-start",
-    paddingTop: 58,
-    paddingBottom: 58,
+    paddingTop: 72,
+    paddingBottom: 72,
   },
   loginFormInner: {
     width: "100%",
@@ -1465,14 +1524,14 @@ const s = StyleSheet.create({
     gap: 20,
   },
   authField: { gap: 11, marginTop: 5 },
-  passwordField: { marginTop: 14 },
-  loginButtonWrap: { marginTop: 28 },
+  passwordField: { marginTop: 20 },
+  loginButtonWrap: { marginTop: 34 },
   authTopRow: {
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
   },
-  loginIntro: { marginBottom: 18 },
+  loginIntro: { marginBottom: 24 },
   roleSwitch: {
     minWidth: 58,
     height: 44,
@@ -1673,12 +1732,16 @@ const s = StyleSheet.create({
     padding: 16,
     gap: 9,
   },
+  quickBottomAligned: { justifyContent: "flex-end", minHeight: 128 },
+  quickBottomCopy: { gap: 2 },
+  quickImageIcon: { width: 32, height: 32, tintColor: c.gold },
   homeActionList: { gap: 12, marginTop: 2 },
   homeActionDark: { minHeight: 66, borderRadius: 8, backgroundColor: c.ink, paddingHorizontal: 18, flexDirection: "row", gap: 14, alignItems: "center" },
   homeActionDarkText: { flex: 1, color: c.paper, fontSize: 17, fontWeight: "800" },
   homeActionLight: { minHeight: 66, borderRadius: 8, backgroundColor: c.paper, borderWidth: 1, borderColor: c.line, paddingHorizontal: 18, flexDirection: "row", gap: 14, alignItems: "center" },
   homeActionLightText: { flex: 1, color: c.ink, fontSize: 17, fontWeight: "800" },
   caColumns: { flexDirection: "row", gap: 20, alignItems: "flex-start" },
+  caContentStart: { paddingTop: 18 },
   caMain: { flex: 1.15, gap: 16 },
   caSide: { flex: 0.85, gap: 16 },
   modal: {
@@ -1720,6 +1783,9 @@ const s = StyleSheet.create({
     letterSpacing: 1,
   },
   headerTitle: { color: c.paper, fontSize: 16, fontWeight: "800" },
+  caHeaderLogo: { width: 116, height: 46 },
+  caHeaderIdentity: { minWidth: 96, alignItems: "flex-end", justifyContent: "center" },
+  caHeaderName: { color: c.champagne, fontWeight: "800", fontSize: 14 },
   segment: {
     flexDirection: "row",
     backgroundColor: "#ECEAE6",
@@ -1800,4 +1866,35 @@ const s = StyleSheet.create({
   camera: { flex: 1 },
   cameraGuide: { position: "absolute", width: "68%", aspectRatio: 1, alignSelf: "center", top: "16%", borderWidth: 2, borderColor: c.champagne, borderRadius: 12 },
   cautionCard: { backgroundColor: "#F8EDEF", borderWidth: 1, borderColor: "#D7A9AF", borderRadius: 8, padding: 20, gap: 12 },
+  consultationMemoCard: { backgroundColor: c.paper, borderLeftWidth: 3, borderLeftColor: c.gold, padding: 18, gap: 8 },
+  consultationMemoDate: { color: c.gold, fontSize: 13, fontWeight: "800" },
+  consultationMemoText: { color: c.ink, fontSize: 15, fontWeight: "700", lineHeight: 22 },
+  consultationMemoFollow: { color: c.muted, fontSize: 13, lineHeight: 20 },
+  briefHeading: { gap: 7, paddingTop: 8, paddingBottom: 8 },
+  briefHero: { backgroundColor: c.ink, padding: 28, gap: 24 },
+  briefIcon: { width: 54, height: 54, borderRadius: 12, backgroundColor: c.paper, alignItems: "center", justifyContent: "center" },
+  briefSummary: { color: c.paper, fontSize: 16, lineHeight: 25, fontWeight: "600" },
+  briefSuggestion: { flexDirection: "row", alignItems: "center", gap: 14 },
+  briefNumber: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center", backgroundColor: "#F5E5B8" },
+  briefNumberText: { color: "#87601D", fontSize: 14, fontWeight: "800" },
+  aiDisclosure: { borderLeftWidth: 3, borderLeftColor: c.forest, backgroundColor: "#EDF5F1", padding: 18 },
+  aiDisclosureText: { color: c.forest, fontSize: 13, lineHeight: 21 },
+  consultationHeading: { gap: 8, paddingTop: 8, paddingBottom: 10 },
+  formLabel: { color: c.ink, fontSize: 14, fontWeight: "800", marginTop: 4 },
+  consultationLargeInput: { minHeight: 128, textAlignVertical: "top" },
+  consentBox: { flexDirection: "row", gap: 14, alignItems: "flex-start", padding: 20, borderLeftWidth: 3, borderLeftColor: c.forest, backgroundColor: "#EDF5F1" },
+  checkbox: { width: 28, height: 28, borderWidth: 1, borderColor: c.line, borderRadius: 5, backgroundColor: c.paper, alignItems: "center", justifyContent: "center" },
+  checkboxChecked: { backgroundColor: c.forest, borderColor: c.forest },
+  checkboxTick: { color: c.paper, fontWeight: "900" },
+  issueHeading: { gap: 8, paddingTop: 10, paddingBottom: 14 },
+  issueDetailColumns: { flexDirection: "row", gap: 28, alignItems: "stretch" },
+  issueDetailColumnsMobile: { flexDirection: "column" },
+  issueVisual: { flex: 0.85, minHeight: 350, alignItems: "center", justifyContent: "center", gap: 13, padding: 30, backgroundColor: c.ink },
+  issueVisualStamp: { width: 154, height: 154 },
+  issueVisualStore: { color: c.paper, fontSize: 21, fontWeight: "800", textAlign: "center" },
+  issueDetailLine: { flexDirection: "row", gap: 12, alignItems: "center", borderTopWidth: 1, borderColor: c.line, paddingTop: 14 },
+  issueInfoIcon: { width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center", backgroundColor: "#F4E6C4" },
+  issueActions: { flexDirection: "row", gap: 20 },
+  issueActionsMobile: { flexDirection: "column", gap: 12 },
+  backChevron: { fontSize: 28, lineHeight: 30, fontWeight: "900", verticalAlign: "middle" },
 });
