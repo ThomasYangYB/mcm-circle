@@ -1614,8 +1614,10 @@ const s = StyleSheet.create({
   loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: 0, marginTop: 8 },
   // 원본 로고가 잘리지 않도록 음수 여백을 사용하지 않는다.
   loginLogoTablet: { width: 370, height: 142, marginLeft: 0, marginTop: 0 },
-  loginHeroSpacer: { height: 12 },
-  loginHeroSpacerTablet: { height: 24 },
+  // 로고와 Journey Passport 배지 사이의 세로 여백만 최소화한다.
+  // 로고의 가로 위치는 변경하지 않는다.
+  loginHeroSpacer: { height: 0 },
+  loginHeroSpacerTablet: { height: 0 },
   loginForm: {
     flexGrow: 1,
     backgroundColor: c.paper,
