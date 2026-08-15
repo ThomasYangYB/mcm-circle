@@ -93,20 +93,20 @@ type FontDefaultComponent = { defaultProps?: { style?: unknown } };
 
 // 국내 공식 지점용 여권 도장. 실제 발급 날짜는 고객 데이터에서 별도로 표시한다.
 const STORE_STAMP_IMAGES: Record<string, number> = {
-  "MCM 하우스 플래그십스토어": require("../stores/journey-stamp-seoul-haus-flagship-96.png"),
-  "MCM 롯데백화점 잠실점": require("../stores/journey-stamp-seoul-lotte-jamsil-96.png"),
-  "MCM 롯데백화점 본점": require("../stores/journey-stamp-seoul-lotte-main-96.png"),
-  "MCM 신라면세점 서울점": require("../stores/journey-stamp-seoul-shilla-duty-free-96.png"),
-  "MCM 신세계면세점 명동점": require("../stores/journey-stamp-seoul-shinsegae-duty-free-main-96.png"),
-  "MCM 현대면세점 무역센터점": require("../stores/journey-stamp-seoul-hyundai-duty-free-trade-center-96.png"),
-  "MCM 롯데면세점 월드타워점": require("../stores/journey-stamp-seoul-lotte-world-tower-duty-free-96.png"),
-  "MCM 롯데면세점 본점": require("../stores/journey-stamp-seoul-lotte-duty-free-main-96.png"),
-  "MCM 파주 프리미엄 아울렛": require("../stores/journey-stamp-paju-premium-outlet-96.png"),
-  "MCM 대구 롯데백화점": require("../stores/journey-stamp-daegu-lotte-96.png"),
-  "MCM 부산 롯데면세점": require("../stores/journey-stamp-busan-lotte-duty-free-96.png"),
-  "MCM 인천 T1 현대면세점": require("../stores/journey-stamp-incheon-t1-hyundai-duty-free-96.png"),
-  "MCM 제주 신라면세점": require("../stores/journey-stamp-jeju-shilla-duty-free-96.png"),
-  "MCM 제주 롯데면세점": require("../stores/journey-stamp-jeju-lotte-duty-free-96.png"),
+  "MCM 하우스 플래그십스토어": require("../stores/journey-stamp-seoul-haus-flagship.png"),
+  "MCM 롯데백화점 잠실점": require("../stores/journey-stamp-seoul-lotte-jamsil.png"),
+  "MCM 롯데백화점 본점": require("../stores/journey-stamp-seoul-lotte-main.png"),
+  "MCM 신라면세점 서울점": require("../stores/journey-stamp-seoul-shilla-duty-free.png"),
+  "MCM 신세계면세점 명동점": require("../stores/journey-stamp-seoul-shinsegae-duty-free-main.png"),
+  "MCM 현대면세점 무역센터점": require("../stores/journey-stamp-seoul-hyundai-duty-free-trade-center.png"),
+  "MCM 롯데면세점 월드타워점": require("../stores/journey-stamp-seoul-lotte-world-tower-duty-free.png"),
+  "MCM 롯데면세점 본점": require("../stores/journey-stamp-seoul-lotte-duty-free-main.png"),
+  "MCM 파주 프리미엄 아울렛": require("../stores/journey-stamp-paju-premium-outlet.png"),
+  "MCM 대구 롯데백화점": require("../stores/journey-stamp-daegu-lotte.png"),
+  "MCM 부산 롯데면세점": require("../stores/journey-stamp-busan-lotte-duty-free.png"),
+  "MCM 인천 T1 현대면세점": require("../stores/journey-stamp-incheon-t1-hyundai-duty-free.png"),
+  "MCM 제주 신라면세점": require("../stores/journey-stamp-jeju-shilla-duty-free.png"),
+  "MCM 제주 롯데면세점": require("../stores/journey-stamp-jeju-lotte-duty-free.png"),
 };
 const STORE_NAMES = Object.keys(STORE_STAMP_IMAGES) as StoreName[];
 
@@ -332,24 +332,27 @@ function Header({
   title,
   back = false,
   caMode = false,
+  logoOnly = false,
 }: {
   title: string;
   back?: boolean;
   caMode?: boolean;
+  logoOnly?: boolean;
 }) {
   const n = useNavigation<any>();
   const { logout, currentStore } = useApp();
+  const { isTablet } = useResponsive();
   return (
-    <View style={s.header}>
+    <View style={[s.header, logoOnly && !isTablet && s.headerHome]}>
       <Pressable
         hitSlop={12}
         onPress={() => (back ? n.goBack() : undefined)}
-        style={[s.headerMark, !back && s.headerLogoMark]}
+        style={[s.headerMark, !back && s.headerLogoMark, logoOnly && !isTablet && s.headerHomeMark]}
       >
         {back ? (
           <ChevronLeft color={c.champagne} size={24} strokeWidth={2.6} />
         ) : (
-          <Image source={BRAND_LOGO} style={[s.headerLogo, caMode && s.caHeaderLogo]} resizeMode="contain" />
+          <Image source={BRAND_LOGO} style={[s.headerLogo, caMode && s.caHeaderLogo, caMode && !isTablet && s.caHeaderLogoPhone, logoOnly && !isTablet && s.headerHomeLogo]} resizeMode="contain" />
         )}
       </Pressable>
       {caMode ? (
@@ -360,12 +363,12 @@ function Header({
             {!back && <Pressable accessibilityLabel="로그아웃" onPress={logout} style={s.caHeaderLogout}><LogOut color={c.ink} size={14} /></Pressable>}
           </View>
         </>
-      ) : (
+      ) : !logoOnly ? (
         <View style={{ flex: 1 }}>
           <Text style={s.headerKicker}>MCM PRIVATE CIRCLE</Text>
           <Text style={s.headerTitle}>{title}</Text>
         </View>
-      )}
+      ) : null}
     </View>
   );
 }
@@ -386,19 +389,21 @@ function Screen({
   back = false,
   preset = "content",
   caHeader = false,
+  homeHeader = false,
 }: {
   children: React.ReactNode;
   title?: string;
   back?: boolean;
   preset?: ScreenPreset;
   caHeader?: boolean;
+  homeHeader?: boolean;
 }) {
   const { horizontalPadding } = useResponsive();
   const maxWidth = preset === "compact" ? 560 : preset === "wide" ? 1180 : 820;
   return (
     <SafeAreaView style={s.safe}>
       <StatusBar style="dark" />
-      {(title || caHeader) && <Header title={title ?? ""} back={back} caMode={caHeader} />}
+      {(title || caHeader || homeHeader) && <Header title={title ?? ""} back={back} caMode={caHeader} logoOnly={homeHeader} />}
       <ScrollView
         contentContainerStyle={s.scrollOuter}
         keyboardShouldPersistTaps="handled"
@@ -611,13 +616,13 @@ function CustomerHome() {
     ? Math.min(132, (stampRowWidth - stampGap * (recentStamps.length - 1)) / Math.max(recentStamps.length, 1))
     : 124;
   return (
-    <Screen>
-      <View style={[s.brandRow, s.homeBrandRow, !isTablet && s.homeBrandRowPhone]}>
-        <View style={[s.homeLogoPlate, !isTablet && s.homeLogoPlatePhone]}>
-          <Image source={BRAND_LOGO} style={[s.homeLogoShadow, !isTablet && s.homeLogoPhone]} resizeMode="contain" />
-          <Image source={BRAND_LOGO} style={[s.homeLogo, !isTablet && s.homeLogoPhone]} resizeMode="contain" />
+    <Screen homeHeader={!isTablet}>
+      {isTablet && <View style={[s.brandRow, s.homeBrandRow]}>
+        <View style={s.homeLogoPlate}>
+          <Image source={BRAND_LOGO} style={s.homeLogoShadow} resizeMode="contain" />
+          <Image source={BRAND_LOGO} style={s.homeLogo} resizeMode="contain" />
         </View>
-      </View>
+      </View>}
       <Text style={s.kicker}>MCM JOURNEY PASSPORT</Text>
       <Text style={s.homeGreeting}>안녕하세요, {customer.name} 님</Text>
       <Text style={s.body}>국내 MCM 매장에서 기록한 나만의 여정입니다.</Text>
@@ -746,19 +751,14 @@ function SectionTitle({
 }
 function StoreStampImage({ storeName, size, lightPlate = false }: { storeName: string; size: number; lightPlate?: boolean }) {
   const asset = getStampAsset(storeName);
-  const [failed, setFailed] = useState(false);
   const outerSize = lightPlate ? size + 22 : size;
   return (
     <View style={[s.stampArtwork, { width: outerSize, height: outerSize, borderRadius: outerSize / 2 }, lightPlate && s.issueStampPlate]}>
-      <View style={[s.stampArtworkFallback, { borderRadius: size / 2 }]}>
-        <Stamp color={c.wine} size={Math.max(22, Math.round(size * 0.28))} />
-      </View>
-      {!!asset && !failed && (
+      {!!asset && (
         <Image
           source={asset}
           style={{ width: size, height: size }}
           resizeMode="contain"
-          onError={() => setFailed(true)}
         />
       )}
     </View>
@@ -1694,7 +1694,7 @@ const s = StyleSheet.create({
   loginInnerTablet: { maxWidth: 420 },
   // 휴대폰에서는 logo.png 파일 내부의 투명 여백까지 보정해, 실제 로고 픽셀이 제목 시작선과 맞는다.
   // 태블릿은 별도 스타일을 유지한다.
-  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: -50, marginTop: 8 },
+  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: 0, marginTop: 8 },
   // 실제 로고 픽셀은 잘리지 않는다.
   loginLogoTablet: { width: 370, height: 142, marginLeft: -30, marginTop: 0 },
   // 로고와 Journey Passport 배지/본문은 서로 충분히 떨어뜨린다.
@@ -1967,6 +1967,7 @@ const s = StyleSheet.create({
     gap: 12,
     backgroundColor: c.ink,
   },
+  headerHome: { height: 54, paddingHorizontal: 12 },
   headerMark: {
     width: 42,
     height: 42,
@@ -1977,7 +1978,9 @@ const s = StyleSheet.create({
   },
   // 헤더 높이를 줄이는 대신 로고가 세로 공간을 더 채우도록 한다.
   headerLogoMark: { width: 186, height: 64, backgroundColor: "transparent" },
+  headerHomeMark: { width: 154, height: 52 },
   headerLogo: { width: 180, height: 64 },
+  headerHomeLogo: { width: 148, height: 52 },
   headerMarkText: { color: c.champagne, fontFamily: "Pretendard-Bold", fontWeight: "900", fontSize: 30, lineHeight: 34 },
   headerKicker: {
     color: c.champagne,
@@ -1987,6 +1990,7 @@ const s = StyleSheet.create({
   },
   headerTitle: { color: c.paper, fontFamily: "Pretendard-Bold", fontSize: 16, fontWeight: "800" },
   caHeaderLogo: { width: 180, height: 64 },
+  caHeaderLogoPhone: { marginLeft: -16 },
   caHeaderIdentity: { minWidth: 0, marginLeft: "auto", flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 7 },
   caHeaderName: { color: c.paper, fontFamily: "Pretendard-Bold", fontWeight: "800", fontSize: 15 },
   caHeaderStore: { color: "#CFC8BC", fontFamily: "Pretendard", fontSize: 11, marginTop: 2 },
