@@ -29,6 +29,7 @@ export interface CareRecord {
 export interface ConsultationNote {
   id: string;
   caName: string;
+  storeName?: string;
   visitPurpose: string;
   content: string;
   styleChange?: string;

@@ -26,6 +26,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import { useFonts } from "expo-font";
 import * as ImagePicker from "expo-image-picker";
 import QRCode from "react-native-qrcode-svg";
 import {
@@ -55,6 +56,7 @@ import { MOCK_PRODUCTS } from "../src/mock/products";
 import { MOCK_BRIEFS } from "../src/mock/briefs";
 import type { Customer, JourneyStamp, UserRole } from "../src/types";
 import { colors as c } from "./theme";
+import { caApi, hasConnectedBackend } from "./api";
 
 type AuthScreen = "login" | "signup";
 type StoreName = keyof typeof STORE_STAMP_IMAGES;
@@ -72,6 +74,7 @@ type AppState = {
   currentStore: StoreName;
   setCurrentStore: (store: StoreName) => void;
   addStamp: (id: string, type: JourneyStamp["type"]) => void;
+  addConsultation: (id: string, note: Omit<import("../src/types").ConsultationNote, "id" | "createdAt">) => void;
   updateAvatar: (uri: string) => void;
 };
 const Ctx = createContext<AppState | null>(null);
@@ -220,6 +223,20 @@ function Provider({ children }: { children: React.ReactNode }) {
                 },
           ),
         ),
+      addConsultation: (id: string, note: Omit<import("../src/types").ConsultationNote, "id" | "createdAt">) =>
+        setCustomers((all) =>
+          all.map((x) =>
+            x.id !== id
+              ? x
+              : {
+                  ...x,
+                  consultations: [
+                    { ...note, id: `consultation-${Date.now()}`, createdAt: new Date().toISOString() },
+                    ...x.consultations,
+                  ],
+                },
+          ),
+        ),
       updateAvatar: (uri: string) =>
         setCustomers((all) =>
           all.map((x) => (x.id === selected ? { ...x, avatarUrl: uri } : x)),
@@ -292,6 +309,7 @@ function Header({
   caMode?: boolean;
 }) {
   const n = useNavigation<any>();
+  const { logout, currentStore } = useApp();
   return (
     <View style={s.header}>
       <Pressable
@@ -300,7 +318,7 @@ function Header({
         style={[s.headerMark, !back && s.headerLogoMark]}
       >
         {back ? (
-          <ChevronLeft color={c.champagne} size={32} strokeWidth={2.6} />
+          <ChevronLeft color={c.champagne} size={24} strokeWidth={2.6} />
         ) : (
           <Image source={BRAND_LOGO} style={[s.headerLogo, caMode && s.caHeaderLogo]} resizeMode="contain" />
         )}
@@ -309,7 +327,8 @@ function Header({
         <>
           {back && <View style={{ flex: 1 }}><Text style={s.headerTitle}>{title}</Text></View>}
           <View style={s.caHeaderIdentity}>
-            <Text style={s.caHeaderName}>이현우 CA</Text>
+            <View><Text style={s.caHeaderName}>CA 이지원</Text><Text style={s.caHeaderStore}>{currentStore.replace("MCM ", "")}</Text></View>
+            {!back && <Pressable accessibilityLabel="로그아웃" onPress={logout} style={s.caHeaderLogout}><LogOut color={c.ink} size={24} /></Pressable>}
           </View>
         </>
       ) : (
@@ -785,7 +804,6 @@ function Quick({
       {imageIcon ? <Image source={imageIcon} style={s.quickImageIcon} resizeMode="contain" /> : icon}
       <View style={bottomAligned && s.quickBottomCopy}>
         <Text style={s.cardTitle}>{title}</Text>
-        {!bottomAligned && <Text style={s.caption}>자세히 보기</Text>}
       </View>
     </Pressable>
   );
@@ -1025,7 +1043,7 @@ function Saved() {
 }
 
 function CaHome() {
-  const { customers, select, logout, currentStore, setCurrentStore } =
+  const { customers, select, currentStore, setCurrentStore } =
     useApp();
   const n = useNavigation<any>();
   const { isTablet } = useResponsive();
@@ -1074,8 +1092,8 @@ function CaHome() {
     <>
       <View style={[s.caDashboardTop, isTablet && s.caDashboardTopTablet]}>
         <Pressable style={s.caScanHero} onPress={() => n.navigate("Scanner")}>
-          <View style={s.caScanIcon}><QrCode color={c.ink} size={34} /></View>
-          <View><Text style={s.passportName}>Journey Passport 스캔</Text><Text style={s.darkBody}>QR 카메라 열기</Text></View>
+          <View style={s.caScanIcon}><QrCode color={c.ink} size={28} /></View>
+          <View style={s.caScanCopy}><Text style={s.caScanTitle}>Journey Passport 스캔</Text><Text style={s.darkBody}>QR 카메라 열기</Text></View>
         </Pressable>
         <View style={s.caSearchBox}>
           <View style={s.caSearchTitle}><Search color={c.gold} size={30} /><Text style={s.sectionTitle}>고객 검색</Text></View>
@@ -1126,30 +1144,12 @@ function CaHome() {
       {isTablet ? (
         <View style={s.caColumns}>
           <View style={[s.caMain, s.caContentStart]}>{actions}</View>
-          <View style={s.caSide}>
-            {clientList}
-            <Pressable
-              accessibilityRole="button"
-              onPress={logout}
-              style={s.logoutButton}
-            >
-              <LogOut color={c.wine} size={18} />
-              <Text style={s.logoutText}>로그아웃</Text>
-            </Pressable>
-          </View>
+          <View style={s.caSide}>{clientList}</View>
         </View>
       ) : (
         <>
           <View style={s.caContentStart}>{actions}</View>
           {clientList}
-          <Pressable
-            accessibilityRole="button"
-            onPress={logout}
-            style={s.logoutButton}
-          >
-            <LogOut color={c.wine} size={18} />
-            <Text style={s.logoutText}>로그아웃</Text>
-          </Pressable>
         </>
       )}
     </Screen>
@@ -1260,19 +1260,12 @@ function CustomerDetail() {
           <Text style={s.body}>{customer.cautionNotes}</Text>
         </View>
       )}
-      <SectionTitle title="최근 상담과 후속 메모" />
-      {customer.consultations.slice(0, 2).map((note) => (
-        <View key={note.id} style={s.consultationMemoCard}>
-          <Text style={s.consultationMemoDate}>
-            {note.createdAt.slice(0, 10).replace(/-/g, ". ")} · {note.visitPurpose}
-          </Text>
-          <Text style={s.consultationMemoText}>{note.content}</Text>
-          {note.cautionUpdate ? <Text style={s.consultationMemoFollow}>후속 · {note.cautionUpdate}</Text> : null}
-        </View>
-      ))}
-      {!customer.consultations.length && (
-        <Card><Text style={s.body}>아직 저장된 상담 기록이 없습니다.</Text></Card>
-      )}
+      <SectionTitle title="상담 기록" />
+      <Pressable onPress={() => n.navigate("ConsultationHistory")} style={s.historyOpenCard}>
+        <FileText color={c.gold} size={26} />
+        <View style={{ flex: 1 }}><Text style={s.cardTitle}>이전 상담 기록 보기</Text><Text style={s.body}>상담 날짜, 지점, 작성 CA와 세부 내용을 확인합니다.</Text></View>
+        <ChevronRight color={c.gold} size={24} />
+      </Pressable>
     </>
   );
   return (
@@ -1291,9 +1284,38 @@ function CustomerDetail() {
     </Screen>
   );
 }
+function ConsultationHistory() {
+  const { customer } = useApp();
+  const n = useNavigation<any>();
+  return (
+    <Screen title="이전 상담 기록" back caHeader>
+      <View style={s.consultationHeading}><Text style={s.kicker}>CONSULTATION ARCHIVE</Text><Text style={s.pageTitle}>이전 상담 기록</Text><Text style={s.body}>고객 여정에 저장된 상담 기록입니다.</Text></View>
+      {customer.consultations.map((note) => (
+        <Card key={note.id}>
+          <Text style={s.consultationMemoDate}>{note.createdAt.slice(0, 10).replace(/-/g, ". ")}</Text>
+          <Text style={s.cardTitle}>{note.storeName ?? customer.stamps[0]?.storeName ?? "국내 MCM 매장"}</Text>
+          <Text style={s.body}>작성 CA · {note.caName}</Text>
+          <Pressable onPress={() => n.navigate("ConsultationDetail", { noteId: note.id })} style={s.historyDetailLink}><Text style={s.link}>자세히 보기</Text><ChevronRight color={c.gold} size={19} /></Pressable>
+        </Card>
+      ))}
+      {!customer.consultations.length && <Card><Text style={s.body}>저장된 상담 기록이 없습니다.</Text></Card>}
+    </Screen>
+  );
+}
+function ConsultationDetail({ route }: { route: any }) {
+  const { customer } = useApp();
+  const note = customer.consultations.find((item) => item.id === route.params?.noteId);
+  if (!note) return <Screen title="상담 기록" back caHeader><Card><Text style={s.body}>상담 기록을 찾을 수 없습니다.</Text></Card></Screen>;
+  return (
+    <Screen title="상담 기록" back caHeader>
+      <View style={s.consultationHeading}><Text style={s.kicker}>CONSULTATION ARCHIVE</Text><Text style={s.pageTitle}>상담 기록 상세</Text><Text style={s.body}>{note.createdAt.slice(0, 10)} · {note.storeName ?? "국내 MCM 매장"} · {note.caName}</Text></View>
+      <Card><Text style={s.formLabel}>방문 목적</Text><Text style={s.body}>{note.visitPurpose}</Text><Text style={s.formLabel}>상담 내용 및 고객 관심사</Text><Text style={s.body}>{note.content}</Text><Text style={s.formLabel}>선호 스타일 변화</Text><Text style={s.body}>{note.styleChange || "기록 없음"}</Text><Text style={s.formLabel}>후속 응대 시 주의사항</Text><Text style={s.body}>{note.cautionUpdate || "기록 없음"}</Text></Card>
+    </Screen>
+  );
+}
 function Brief() {
   const { customer } = useApp();
-  const brief = MOCK_BRIEFS[customer.id];
+  const [brief, setBrief] = useState(MOCK_BRIEFS[customer.id]);
   const suggestions = [
     "최근 상담 맥락부터 자연스럽게 이어간다.",
     "재방문 시 선호 색상과 관심 제품 재고를 먼저 확인한다.",
@@ -1323,7 +1345,19 @@ function Brief() {
         <Text style={s.body}>{brief?.cautions[0] ?? "고객의 반응을 먼저 확인해 주세요."}</Text>
       </View>
       <View style={s.aiDisclosure}><Text style={s.aiDisclosureText}>AI는 고객과 직접 대화하지 않습니다. 이 브리프는 실제 기록을 요약한 참고 정보이며 최종 응대 방식은 CA가 결정합니다.</Text></View>
-      <Button secondary onPress={() => Alert.alert("재생성 완료", "최신 상담 기록을 기준으로 브리프를 다시 만들었습니다.")}>최신 기록으로 다시 생성</Button>
+      <Button secondary onPress={async () => {
+        if (!hasConnectedBackend()) {
+          Alert.alert("데모 갱신 완료", "저장된 상담 기록을 백엔드 LLM이 연결되면 같은 요청으로 분석합니다.");
+          return;
+        }
+        try {
+          const response = await caApi.regenerateCustomerInsights(customer.id);
+          setBrief(response.data.brief);
+          Alert.alert("AI 브리프 갱신 완료", "최신 상담 기록과 이전 여정을 반영했습니다.");
+        } catch {
+          Alert.alert("갱신 실패", "네트워크를 확인한 뒤 다시 시도해 주세요.");
+        }
+      }}>최신 기록으로 다시 생성</Button>
     </Screen>
   );
 }
@@ -1339,7 +1373,7 @@ function CaRecommendations() {
 }
 function Consultation() {
   const n = useNavigation<any>();
-  const { customer } = useApp();
+  const { customer, currentStore, addConsultation } = useApp();
   const [purpose, setPurpose] = useState("");
   const [memo, setMemo] = useState("");
   const [products, setProducts] = useState("");
@@ -1363,8 +1397,22 @@ function Consultation() {
       </Card>
       <Pressable onPress={() => setConsented(!consented)} style={s.consentBox}><View style={[s.checkbox, consented && s.checkboxChecked]}>{consented && <Text style={s.checkboxTick}>✓</Text>}</View><View style={{ flex: 1 }}><Text style={s.cardTitle}>입력 내용 검토</Text><Text style={s.body}>기록은 상담 지원과 고객 여정에만 활용하며 인사평가나 성과 보상에는 사용하지 않습니다.</Text></View></Pressable>
       <Button
-        onPress={() => {
+        onPress={async () => {
           if (!consented) { Alert.alert("확인 필요", "입력 내용 검토에 동의해 주세요."); return; }
+          const draft = {
+            caName: "이지원 CA",
+            storeName: currentStore,
+            visitPurpose: purpose || "상담 방문",
+            content: memo || "상담 내용이 입력되지 않았습니다.",
+            styleChange: style,
+            cautionUpdate: caution,
+            consentConfirmed: true,
+          };
+          addConsultation(customer.id, draft);
+          // 백엔드 주소가 연결되면 같은 구조의 상담 데이터가 서버·LLM 파이프라인으로 전송된다.
+          if (hasConnectedBackend()) {
+            try { await caApi.createConsultation(customer.id, draft); } catch { /* local save remains available offline */ }
+          }
           Alert.alert("저장 완료", "상담 기록이 고객 이력에 저장되었습니다.");
           n.goBack();
         }}
@@ -1497,6 +1545,8 @@ function CaFlow() {
       <Stack.Screen name="Unregistered" component={Unregistered} />
       <Stack.Screen name="CustomerDetail" component={CustomerDetail} />
       <Stack.Screen name="Brief" component={Brief} />
+      <Stack.Screen name="ConsultationHistory" component={ConsultationHistory} />
+      <Stack.Screen name="ConsultationDetail" component={ConsultationDetail} />
       <Stack.Screen name="CaRecommendations" component={CaRecommendations} />
       <Stack.Screen name="Consultation" component={Consultation} />
       <Stack.Screen name="IssueStamp" component={IssueStamp} />
@@ -1524,6 +1574,12 @@ function Root() {
 }
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
+  const [fontsLoaded] = useFonts({
+    Pretendard: require("../assets/fonts/Pretendard-Regular.otf"),
+    "Pretendard-SemiBold": require("../assets/fonts/Pretendard-SemiBold.otf"),
+    "Pretendard-Bold": require("../assets/fonts/Pretendard-Bold.otf"),
+  });
+  if (!fontsLoaded) return <SafeAreaView style={s.splash} />;
   return (
     <SafeAreaProvider>
       {showSplash ? (
@@ -1555,7 +1611,7 @@ const s = StyleSheet.create({
   loginDarkTablet: { width: "42%", flexGrow: 0, flexShrink: 0, height: undefined, paddingTop: 68, paddingBottom: 52, paddingLeft: 46, paddingRight: 24 },
   loginInner: { flex: 1, maxWidth: 460, alignSelf: "center", width: "100%", justifyContent: "flex-start" },
   loginInnerTablet: { maxWidth: 420 },
-  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: -20, marginTop: 12 },
+  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: 0, marginTop: 12 },
   loginLogoTablet: { width: 370, height: 142, marginLeft: 0, marginTop: 0 },
   loginHeroSpacer: { height: 12 },
   loginHeroSpacerTablet: { height: 24 },
@@ -1636,13 +1692,13 @@ const s = StyleSheet.create({
     marginTop: 20,
   },
   loginHeadlineTablet: { fontSize: 30, lineHeight: 40 },
-  pageTitle: { color: c.ink, fontSize: 25, fontWeight: "800", lineHeight: 34 },
-  body: { color: c.muted, fontSize: 14, lineHeight: 21 },
-  darkBody: { color: "#D5D0C8", fontSize: 13, lineHeight: 20, marginTop: 6 },
+  pageTitle: { color: c.ink, fontFamily: "Pretendard-Bold", fontSize: 25, fontWeight: "800", lineHeight: 34 },
+  body: { color: c.muted, fontFamily: "Pretendard", fontSize: 14, lineHeight: 21 },
+  darkBody: { color: "#D5D0C8", fontFamily: "Pretendard", fontSize: 13, lineHeight: 20, marginTop: 6 },
   kicker: {
     color: c.gold,
     fontSize: 11,
-    fontWeight: "800",
+    fontFamily: "Pretendard-Bold", fontWeight: "800",
     letterSpacing: 1,
     marginBottom: 4,
   },
@@ -1696,8 +1752,8 @@ const s = StyleSheet.create({
   homeStats: { gap: 0 },
   homeStatsSpacer: { width: 12 },
   homeJoinedStat: { flex: 1, transform: [{ translateX: 12 }] },
-  caption: { color: c.muted, fontSize: 11 },
-  statValue: { color: c.ink, fontSize: 16, fontWeight: "800", marginTop: 3 },
+  caption: { color: c.muted, fontFamily: "Pretendard", fontSize: 11 },
+  statValue: { color: c.ink, fontFamily: "Pretendard-Bold", fontSize: 16, fontWeight: "800", marginTop: 3 },
   pill: {
     paddingHorizontal: 9,
     paddingVertical: 5,
@@ -1724,7 +1780,7 @@ const s = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
   },
-  buttonText: { color: c.paper, fontSize: 14, fontWeight: "700" },
+  buttonText: { color: c.paper, fontFamily: "Pretendard-Bold", fontSize: 14, fontWeight: "700" },
   buttonTextSecondary: { color: c.ink },
   logoutButton: {
     minHeight: 42,
@@ -1741,8 +1797,8 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 18,
   },
-  sectionTitle: { color: c.ink, fontSize: 18, fontWeight: "800" },
-  link: { color: c.gold, fontSize: 14, fontWeight: "800" },
+  sectionTitle: { color: c.ink, fontFamily: "Pretendard-Bold", fontSize: 18, fontWeight: "800" },
+  link: { color: c.gold, fontFamily: "Pretendard-Bold", fontSize: 14, fontWeight: "800" },
   sectionAction: { minHeight: 40, flexDirection: "row", alignItems: "center", gap: 1, justifyContent: "center" },
   stampPreview: { width: 132, alignItems: "center", gap: 7, paddingVertical: 6, paddingHorizontal: 5 },
   stampPreviewCompact: { gap: 5, paddingHorizontal: 3 },
@@ -1773,22 +1829,23 @@ const s = StyleSheet.create({
     backgroundColor: c.cloud,
   },
   productImageTablet: { width: "100%", height: 150 },
-  cardTitle: { color: c.ink, fontSize: 15, fontWeight: "800" },
+  cardTitle: { color: c.ink, fontFamily: "Pretendard-Bold", fontSize: 15, fontWeight: "800" },
   price: { color: c.gold, fontSize: 13, fontWeight: "800", marginTop: 5 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 14 },
   quick: {
     width: "48%",
-    minHeight: 104,
+    minHeight: 128,
     backgroundColor: c.paper,
     borderWidth: 1,
     borderColor: c.line,
     borderRadius: 8,
     padding: 16,
-    gap: 9,
+    gap: 12,
+    justifyContent: "space-between",
   },
-  quickBottomAligned: { justifyContent: "flex-end", minHeight: 128 },
+  quickBottomAligned: { justifyContent: "space-between", minHeight: 128 },
   quickBottomCopy: { gap: 2 },
-  quickImageIcon: { width: 32, height: 32, tintColor: c.gold },
+  quickImageIcon: { width: 24, height: 24, tintColor: c.gold },
   homeActionList: { gap: 12, marginTop: 2 },
   homeActionDark: { minHeight: 66, borderRadius: 8, backgroundColor: c.ink, paddingHorizontal: 18, flexDirection: "row", gap: 14, alignItems: "center" },
   homeActionDarkText: { flex: 1, color: c.paper, fontSize: 17, fontWeight: "800" },
@@ -1820,15 +1877,15 @@ const s = StyleSheet.create({
     backgroundColor: c.ink,
   },
   headerMark: {
-    width: 46,
-    height: 46,
+    width: 42,
+    height: 42,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 8,
     backgroundColor: c.darkPanel,
   },
-  headerLogoMark: { width: 88, backgroundColor: "transparent" },
-  headerLogo: { width: 86, height: 36 },
+  headerLogoMark: { width: 112, backgroundColor: "transparent" },
+  headerLogo: { width: 110, height: 42 },
   headerMarkText: { color: c.champagne, fontWeight: "900", fontSize: 30, lineHeight: 34 },
   headerKicker: {
     color: c.champagne,
@@ -1836,10 +1893,12 @@ const s = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 1,
   },
-  headerTitle: { color: c.paper, fontSize: 16, fontWeight: "800" },
+  headerTitle: { color: c.paper, fontFamily: "Pretendard-Bold", fontSize: 16, fontWeight: "800" },
   caHeaderLogo: { width: 116, height: 46 },
-  caHeaderIdentity: { minWidth: 96, alignItems: "flex-end", justifyContent: "center" },
-  caHeaderName: { color: c.champagne, fontWeight: "800", fontSize: 14 },
+  caHeaderIdentity: { minWidth: 190, flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 14 },
+  caHeaderName: { color: c.paper, fontFamily: "Pretendard-Bold", fontWeight: "800", fontSize: 15 },
+  caHeaderStore: { color: "#CFC8BC", fontFamily: "Pretendard", fontSize: 11, marginTop: 2 },
+  caHeaderLogout: { width: 48, height: 48, borderRadius: 8, backgroundColor: c.paper, alignItems: "center", justifyContent: "center" },
   segment: {
     flexDirection: "row",
     backgroundColor: "#ECEAE6",
@@ -1848,7 +1907,7 @@ const s = StyleSheet.create({
   },
   segmentItem: { flex: 1, paddingVertical: 13, alignItems: "center", borderRadius: 6 },
   segmentActive: { backgroundColor: c.paper },
-  label: { color: c.ink, fontSize: 12, fontWeight: "800", marginTop: 4 },
+  label: { color: c.ink, fontFamily: "Pretendard-Bold", fontSize: 12, fontWeight: "800", marginTop: 4 },
   input: {
     minHeight: 48,
     borderWidth: 1,
@@ -1877,6 +1936,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 14,
+    fontFamily: "Pretendard",
     color: c.ink,
   },
   profilePassportTop: { flexDirection: "row", alignItems: "center", gap: 16, position: "relative", paddingRight: 48 },
@@ -1910,10 +1970,12 @@ const s = StyleSheet.create({
   emptyJourneyBody: { color: c.muted, fontSize: 14, lineHeight: 22, textAlign: "center", marginBottom: 10 },
   caDashboardTop: { gap: 16 },
   caDashboardTopTablet: { flexDirection: "row", alignItems: "stretch" },
-  caScanHero: { flex: 1, minHeight: 236, padding: 28, backgroundColor: c.ink, justifyContent: "space-between", borderRadius: 8, flexDirection: "row", alignItems: "flex-start" },
-  caScanIcon: { width: 76, height: 76, borderRadius: 14, backgroundColor: c.paper, alignItems: "center", justifyContent: "center" },
-  caSearchBox: { flex: 0.85, minHeight: 236, padding: 24, borderWidth: 1, borderColor: c.line, borderRadius: 8, gap: 18, backgroundColor: c.paper },
-  caSearchTitle: { flexDirection: "row", alignItems: "center", gap: 12 },
+  caScanHero: { flex: 1, minHeight: 200, padding: 22, backgroundColor: c.ink, justifyContent: "flex-start", gap: 18, borderRadius: 8, flexDirection: "column", alignItems: "flex-start" },
+  caScanIcon: { width: 60, height: 60, borderRadius: 12, backgroundColor: c.paper, alignItems: "center", justifyContent: "center" },
+  caScanCopy: { gap: 1 },
+  caScanTitle: { color: c.paper, fontFamily: "Pretendard-Bold", fontSize: 21, fontWeight: "800" },
+  caSearchBox: { flex: 0.85, minHeight: 200, padding: 20, borderWidth: 1, borderColor: c.line, borderRadius: 8, gap: 14, backgroundColor: c.paper },
+  caSearchTitle: { flexDirection: "row", alignItems: "center", gap: 10 },
   cameraPermission: { alignItems: "center", justifyContent: "center", minHeight: 420, gap: 18, padding: 28 },
   cameraFrame: { height: 360, borderRadius: 12, overflow: "hidden", backgroundColor: c.ink },
   camera: { flex: 1 },
@@ -1926,7 +1988,7 @@ const s = StyleSheet.create({
   briefHeading: { gap: 7, paddingTop: 8, paddingBottom: 8 },
   briefHero: { backgroundColor: c.ink, padding: 28, gap: 24 },
   briefIcon: { width: 54, height: 54, borderRadius: 12, backgroundColor: c.paper, alignItems: "center", justifyContent: "center" },
-  briefSummary: { color: c.paper, fontSize: 16, lineHeight: 25, fontWeight: "600" },
+  briefSummary: { color: c.paper, fontFamily: "Pretendard-SemiBold", fontSize: 13, lineHeight: 21, fontWeight: "600" },
   briefSuggestion: { flexDirection: "row", alignItems: "center", gap: 14 },
   briefNumber: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center", backgroundColor: "#F5E5B8" },
   briefNumberText: { color: "#87601D", fontSize: 14, fontWeight: "800" },
@@ -1935,8 +1997,8 @@ const s = StyleSheet.create({
   consultationHeading: { gap: 8, paddingTop: 8, paddingBottom: 10 },
   formLabel: { color: c.ink, fontSize: 14, fontWeight: "800", marginTop: 4 },
   consultationLargeInput: { minHeight: 128, textAlignVertical: "top" },
-  consentBox: { flexDirection: "row", gap: 14, alignItems: "flex-start", padding: 20, borderLeftWidth: 3, borderLeftColor: c.forest, backgroundColor: "#EDF5F1" },
-  checkbox: { width: 28, height: 28, borderWidth: 1, borderColor: c.line, borderRadius: 5, backgroundColor: c.paper, alignItems: "center", justifyContent: "center" },
+  consentBox: { flexDirection: "row", gap: 14, alignItems: "center", justifyContent: "center", padding: 20, borderLeftWidth: 3, borderLeftColor: c.forest, backgroundColor: "#EDF5F1" },
+  checkbox: { width: 32, height: 32, borderWidth: 1, borderColor: c.line, borderRadius: 6, backgroundColor: c.paper, alignItems: "center", justifyContent: "center" },
   checkboxChecked: { backgroundColor: c.forest, borderColor: c.forest },
   checkboxTick: { color: c.paper, fontWeight: "900" },
   issueHeading: { gap: 8, paddingTop: 10, paddingBottom: 14 },
@@ -1950,4 +2012,6 @@ const s = StyleSheet.create({
   issueActions: { flexDirection: "row", gap: 20 },
   issueActionsMobile: { flexDirection: "column", gap: 12 },
   backChevron: { fontSize: 28, lineHeight: 30, fontWeight: "900", verticalAlign: "middle" },
+  historyOpenCard: { flexDirection: "row", alignItems: "center", gap: 14, padding: 18, borderWidth: 1, borderColor: c.line, borderRadius: 8, backgroundColor: c.paper },
+  historyDetailLink: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", marginTop: 4 },
 });
