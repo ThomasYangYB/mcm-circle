@@ -1574,12 +1574,12 @@ function Root() {
 }
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [fontsLoaded] = useFonts({
+  // 폰트 다운로드가 느려도 첫 화면이 멈추지 않도록 백그라운드에서만 준비한다.
+  useFonts({
     Pretendard: require("../assets/fonts/Pretendard-Regular.otf"),
     "Pretendard-SemiBold": require("../assets/fonts/Pretendard-SemiBold.otf"),
     "Pretendard-Bold": require("../assets/fonts/Pretendard-Bold.otf"),
   });
-  if (!fontsLoaded) return <SafeAreaView style={s.splash} />;
   return (
     <SafeAreaProvider>
       {showSplash ? (
