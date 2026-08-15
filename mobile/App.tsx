@@ -328,7 +328,7 @@ function Header({
           {back && <View style={{ flex: 1 }}><Text style={s.headerTitle}>{title}</Text></View>}
           <View style={s.caHeaderIdentity}>
             <View><Text style={s.caHeaderName}>CA 이지원</Text><Text style={s.caHeaderStore}>{currentStore.replace("MCM ", "")}</Text></View>
-            {!back && <Pressable accessibilityLabel="로그아웃" onPress={logout} style={s.caHeaderLogout}><LogOut color={c.ink} size={24} /></Pressable>}
+            {!back && <Pressable accessibilityLabel="로그아웃" onPress={logout} style={s.caHeaderLogout}><LogOut color={c.ink} size={20} /></Pressable>}
           </View>
         </>
       ) : (
@@ -1611,8 +1611,8 @@ const s = StyleSheet.create({
   loginDarkTablet: { width: "42%", flexGrow: 0, flexShrink: 0, height: undefined, paddingTop: 68, paddingBottom: 52, paddingLeft: 46, paddingRight: 24 },
   loginInner: { flex: 1, maxWidth: 460, alignSelf: "center", width: "100%", justifyContent: "flex-start" },
   loginInnerTablet: { maxWidth: 420 },
-  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: 0, marginTop: 12 },
-  loginLogoTablet: { width: 370, height: 142, marginLeft: 0, marginTop: 0 },
+  loginLogo: { width: 360, height: 136, alignSelf: "flex-start", marginLeft: -42, marginTop: 8 },
+  loginLogoTablet: { width: 430, height: 164, marginLeft: -72, marginTop: -4 },
   loginHeroSpacer: { height: 12 },
   loginHeroSpacerTablet: { height: 24 },
   loginForm: {
@@ -1895,10 +1895,10 @@ const s = StyleSheet.create({
   },
   headerTitle: { color: c.paper, fontFamily: "Pretendard-Bold", fontSize: 16, fontWeight: "800" },
   caHeaderLogo: { width: 116, height: 46 },
-  caHeaderIdentity: { minWidth: 190, flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 14 },
+  caHeaderIdentity: { minWidth: 0, marginLeft: "auto", flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 10 },
   caHeaderName: { color: c.paper, fontFamily: "Pretendard-Bold", fontWeight: "800", fontSize: 15 },
   caHeaderStore: { color: "#CFC8BC", fontFamily: "Pretendard", fontSize: 11, marginTop: 2 },
-  caHeaderLogout: { width: 48, height: 48, borderRadius: 8, backgroundColor: c.paper, alignItems: "center", justifyContent: "center" },
+  caHeaderLogout: { width: 42, height: 42, borderRadius: 8, backgroundColor: c.paper, alignItems: "center", justifyContent: "center" },
   segment: {
     flexDirection: "row",
     backgroundColor: "#ECEAE6",
