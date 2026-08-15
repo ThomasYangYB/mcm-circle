@@ -1511,7 +1511,7 @@ function IssueStamp() {
     <Screen title="방문 스탬프 발급" back preset="wide" caHeader>
       <View style={s.issueHeading}><Text style={s.kicker}>JOURNEY STAMP</Text><Text style={s.pageTitle}>방문 스탬프 발급</Text><Text style={s.body}>{isTablet ? "고객, 매장, 담당 CA와 발급 일시가 실제 방문과 일치하는지 확인합니다." : "고객, 매장, 담당 CA와 발급 일시가 실제 방문과 일치하는지 확인"}</Text></View>
       <View style={[s.issueDetailColumns, !isTablet && s.issueDetailColumnsMobile]}>
-        <View style={s.issueVisual}><StoreStampImage storeName={currentStore} size={154} lightPlate /><Text style={s.issueVisualStore}>{currentStore}</Text><Text style={s.darkBody}>OFFICIAL JOURNEY STAMP</Text></View>
+        <View style={s.issueVisual}><StoreStampImage storeName={currentStore} size={126} lightPlate /><Text style={s.issueVisualStore}>{currentStore}</Text><Text style={s.darkBody}>OFFICIAL JOURNEY STAMP</Text></View>
         <View style={s.issueInfoColumn}><Card><Text style={s.label}>발급 대상 고객</Text><Text style={s.cardTitle}>{customer.name} · {customer.membershipTier === "VIP" ? "VIP 고객" : "일반 고객"}</Text><View style={s.issueDetailLine}><MapPin size={22} color={c.gold} /><View><Text style={s.caption}>방문 매장</Text><Text style={s.cardTitle}>{currentStore}</Text></View></View><View style={s.issueDetailLine}><View><Text style={s.caption}>담당 CA</Text><Text style={s.cardTitle}>이현우 어드바이저</Text></View></View><View><Text style={s.caption}>발급 일시</Text><Text style={s.cardTitle}>{new Date().toLocaleString("ko-KR")}</Text></View></Card></View>
       </View>
       <View style={[s.issueActions, !isTablet && s.issueActionsMobile]}>
@@ -2100,19 +2100,19 @@ const s = StyleSheet.create({
   issueHeading: { gap: 8, paddingTop: 10, paddingBottom: 14 },
   issueDetailColumns: { flexDirection: "row", gap: 28, alignItems: "stretch" },
   issueDetailColumnsMobile: { flexDirection: "column" },
-  issueVisual: { flex: 0.85, minHeight: 350, alignItems: "center", justifyContent: "center", gap: 13, padding: 30, backgroundColor: c.ink },
+  issueVisual: { flex: 1.2, minHeight: 350, alignItems: "center", justifyContent: "center", gap: 13, padding: 30, backgroundColor: c.ink },
   issueVisualStamp: { width: 154, height: 154 },
   // 검정 카드 위에서만 도장을 분리해 보이게 하는 최소 밝은 원판이다.
   issueStampPlate: { backgroundColor: c.paper, padding: 4 },
-  issueInfoColumn: { flex: 1, minWidth: 0 },
+  issueInfoColumn: { flex: 0.8, minWidth: 0 },
   issueVisualStore: { color: c.paper, fontFamily: "Pretendard-Bold", fontSize: 21, fontWeight: "800", textAlign: "center" },
   issueDetailLine: { flexDirection: "row", gap: 12, alignItems: "center", borderTopWidth: 1, borderColor: c.line, paddingTop: 14 },
   issueInfoIcon: { width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center", backgroundColor: "#F4E6C4" },
   // 아래 두 버튼의 경계는 위의 이미지 카드/정보 카드 사이 경계와 정확히 맞춘다.
   issueActions: { flexDirection: "row", gap: 28, width: "100%", alignSelf: "stretch" },
   issueAction: { flex: 1, flexBasis: 0, minWidth: 0 },
-  issueVisualAction: { flex: 0.85 },
-  issueInfoAction: { flex: 1 },
+  issueVisualAction: { flex: 1.2 },
+  issueInfoAction: { flex: 0.8 },
   issueActionsMobile: { flexDirection: "column", gap: 12 },
   detailActions: { flexDirection: "row", gap: 12, justifyContent: "flex-end" },
   backChevron: { fontFamily: "Pretendard-Bold", fontSize: 28, lineHeight: 30, fontWeight: "900", verticalAlign: "middle" },
