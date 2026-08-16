@@ -29,6 +29,14 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import { useFonts } from "expo-font";
 import * as ImagePicker from "expo-image-picker";
 import QRCode from "react-native-qrcode-svg";
+import Animated, {
+  Easing,
+  FadeIn,
+  FadeInUp,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import {
   Award,
   BookOpen,
@@ -295,6 +303,20 @@ function Pill({
     </View>
   );
 }
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+// 탭 가능한 타일 전반에서 재사용하는, 아주 살짝 눌렸다가 천천히 돌아오는 절제된 터치 스케일.
+function usePressScale(target = 0.97) {
+  const scale = useSharedValue(1);
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const onPressIn = () => {
+    scale.value = withTiming(target, { duration: 140, easing: Easing.out(Easing.quad) });
+  };
+  const onPressOut = () => {
+    scale.value = withTiming(1, { duration: 260, easing: Easing.out(Easing.quad) });
+  };
+  return { style, onPressIn, onPressOut };
+}
+// 명품 앱 특유의 절제된 터치감: 빠르게 튀지 않고 아주 살짝 눌렸다가 천천히 돌아온다.
 function Button({
   children,
   onPress,
@@ -306,30 +328,52 @@ function Button({
   secondary?: boolean;
   icon?: React.ReactNode;
 }) {
+  const scale = useSharedValue(1);
+  const iconShift = useSharedValue(0);
+  const pressStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const iconStyle = useAnimatedStyle(() => ({ transform: [{ translateX: iconShift.value }] }));
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
-      style={[s.button, secondary && s.buttonSecondary]}
+      onPressIn={() => {
+        scale.value = withTiming(0.97, { duration: 140, easing: Easing.out(Easing.quad) });
+        iconShift.value = withTiming(3, { duration: 220, easing: Easing.out(Easing.quad) });
+      }}
+      onPressOut={() => {
+        scale.value = withTiming(1, { duration: 260, easing: Easing.out(Easing.quad) });
+        iconShift.value = withTiming(0, { duration: 260, easing: Easing.out(Easing.quad) });
+      }}
+      style={[s.button, secondary && s.buttonSecondary, pressStyle]}
     >
       <View style={s.buttonContent}>
-        {icon}
+        {icon && <Animated.View style={iconStyle}>{icon}</Animated.View>}
         {
           <Text style={[s.buttonText, secondary && s.buttonTextSecondary]}>
             {children}
           </Text>
         }
       </View>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
+// 카드가 화면에 들어올 때 아주 미세하게 떠오르며 나타난다(deley로 목록에 순차적인 리듬을 줄 수 있다).
 function Card({
   children,
   dark = false,
+  delay = 0,
 }: {
   children: React.ReactNode;
   dark?: boolean;
+  delay?: number;
 }) {
-  return <View style={[s.card, dark && s.darkCard]}>{children}</View>;
+  return (
+    <Animated.View
+      entering={FadeInUp.duration(420).delay(delay).easing(Easing.out(Easing.cubic))}
+      style={[s.card, dark && s.darkCard]}
+    >
+      {children}
+    </Animated.View>
+  );
 }
 function Header({
   title,
@@ -411,11 +455,12 @@ function Screen({
         contentContainerStyle={s.scrollOuter}
         keyboardShouldPersistTaps="handled"
       >
-        <View
+        <Animated.View
+          entering={FadeIn.duration(360)}
           style={[s.scroll, { maxWidth, paddingHorizontal: horizontalPadding }]}
         >
           {children}
-        </View>
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -780,20 +825,37 @@ function StampCard({ item, compact = false, size }: { item: JourneyStamp; compac
     </View>
   );
 }
+// 제품 이미지를 살짝 눌렀을 때만 아주 미세하게 확대되는, 상품이 주인공인 절제된 인터랙션이다.
+function ProductImage({ uri, style }: { uri: string; style: any }) {
+  const scale = useSharedValue(1);
+  const imageStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  return (
+    <AnimatedPressable
+      onPressIn={() => {
+        scale.value = withTiming(1.045, { duration: 240, easing: Easing.out(Easing.quad) });
+      }}
+      onPressOut={() => {
+        scale.value = withTiming(1, { duration: 280, easing: Easing.out(Easing.quad) });
+      }}
+    >
+      <Animated.Image source={{ uri }} style={[style, imageStyle]} />
+    </AnimatedPressable>
+  );
+}
 function ProductList({ products }: { products: typeof MOCK_PRODUCTS }) {
   const { customer, toggleProduct } = useApp();
   const { isTablet } = useResponsive();
   return (
     <View style={[s.productList, isTablet && s.productGrid]}>
-      {products.map((p) => (
+      {products.map((p, i) => (
         <View
           key={p.productId}
           style={isTablet ? s.productGridItem : undefined}
         >
-          <Card>
+          <Card delay={i * 70}>
             <View style={[s.row, isTablet && s.productCardTablet]}>
-              <Image
-                source={{ uri: p.imageUrl }}
+              <ProductImage
+                uri={p.imageUrl}
                 style={[s.productImage, isTablet && s.productImageTablet]}
               />
               <View style={{ flex: 1 }}>
@@ -840,13 +902,19 @@ function Quick({
   onPress: () => void;
   bottomAligned?: boolean;
 }) {
+  const press = usePressScale();
   return (
-    <Pressable onPress={onPress} style={[s.quick, bottomAligned && s.quickBottomAligned]}>
+    <AnimatedPressable
+      onPress={onPress}
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
+      style={[s.quick, bottomAligned && s.quickBottomAligned, press.style]}
+    >
       {imageIcon ? <Image source={imageIcon} style={s.quickImageIcon} resizeMode="contain" /> : icon}
       <View style={bottomAligned && s.quickBottomCopy}>
         <Text style={s.cardTitle}>{title}</Text>
       </View>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
@@ -1823,8 +1891,14 @@ const s = StyleSheet.create({
     borderRadius: 8,
     padding: 20,
     gap: 12,
+    // 카드가 배경 위에 살짝 떠 있는 정도의, 있는 듯 없는 듯한 그림자.
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
   },
-  darkCard: { backgroundColor: c.ink, borderColor: "#4A4640" },
+  darkCard: { backgroundColor: c.ink, borderColor: "#4A4640", shadowOpacity: 0.16 },
   passportName: {
     color: c.paper,
     fontSize: 22,
@@ -1859,11 +1933,18 @@ const s = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 8,
     paddingHorizontal: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 2,
   },
   buttonSecondary: {
     backgroundColor: c.paper,
     borderWidth: 1,
     borderColor: c.line,
+    shadowOpacity: 0.04,
+    elevation: 1,
   },
   buttonContent: {
     flexDirection: "row",
@@ -1936,6 +2017,11 @@ const s = StyleSheet.create({
     padding: 16,
     gap: 12,
     justifyContent: "space-between",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.045,
+    shadowRadius: 8,
+    elevation: 1,
   },
   quickBottomAligned: { justifyContent: "space-between", minHeight: 128 },
   quickBottomCopy: { gap: 2 },
@@ -1946,7 +2032,7 @@ const s = StyleSheet.create({
   homeActionLight: { minHeight: 66, borderRadius: 8, backgroundColor: c.paper, borderWidth: 1, borderColor: c.line, paddingHorizontal: 18, flexDirection: "row", gap: 14, alignItems: "center" },
   homeActionLightText: { flex: 1, color: c.ink, fontFamily: "Pretendard-Bold", fontSize: 17, fontWeight: "800" },
   caColumns: { flexDirection: "row", gap: 20, alignItems: "flex-start" },
-  caContentStart: { paddingTop: 18 },
+  caContentStart: { paddingTop: 18, gap: 16 },
   caMain: { flex: 1.15, gap: 16 },
   caSide: { flex: 0.85, gap: 16 },
   modal: {
