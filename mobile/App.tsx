@@ -29,6 +29,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import { useFonts } from "expo-font";
 import * as ImagePicker from "expo-image-picker";
 import QRCode from "react-native-qrcode-svg";
+import Svg, { Rect } from "react-native-svg";
 import Animated, {
   Easing,
   FadeIn,
@@ -54,7 +55,6 @@ import {
   ScanLine,
   Search,
   Smartphone,
-  Sparkles,
   Stamp,
   UserRound,
   X,
@@ -287,6 +287,28 @@ function Provider({ children }: { children: React.ReactNode }) {
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
+// 사운드웨이브 아이콘: lucide 아이콘과 동일하게 color/size props로 자리에 그대로 끼워 넣을 수 있다.
+function SoundWaveIcon({ color = "#000", size = 24 }: { color?: string; size?: number }) {
+  const barHeights = [4, 8, 12, 16, 20, 16, 12, 8, 4];
+  const barWidth = 1.6;
+  const gap = 1;
+  const startX = 0.8;
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      {barHeights.map((h, i) => (
+        <Rect
+          key={i}
+          x={startX + i * (barWidth + gap)}
+          y={12 - h / 2}
+          width={barWidth}
+          height={h}
+          rx={barWidth / 2}
+          fill={color}
+        />
+      ))}
+    </Svg>
+  );
+}
 function Pill({
   children,
   tone = "gold",
@@ -1473,11 +1495,11 @@ function Brief() {
         <Text style={s.body}>{customer.name} 님 · {customer.stamps[0]?.storeName ?? "국내 MCM 매장"} · 실제 여정 기록 기반</Text>
       </View>
       <View style={s.briefHero}>
-        <View style={s.row}><View style={s.briefIcon}><Sparkles color={c.ink} size={24} /></View><View style={{ flex: 1 }}><Text style={s.passportName}>상담 맥락 요약</Text><Text style={s.darkBody}>데모 데이터 기반 생성</Text></View><Pill tone="forest">DEMO AI</Pill></View>
+        <View style={s.row}><View style={s.briefIcon}><SoundWaveIcon color={c.ink} size={24} /></View><View style={{ flex: 1 }}><Text style={s.passportName}>상담 맥락 요약</Text><Text style={s.darkBody}>데모 데이터 기반 생성</Text></View><Pill tone="forest">DEMO AI</Pill></View>
         <Text style={s.briefSummary}>{brief?.summary ?? "고객의 최근 여정을 분석하는 중입니다."}</Text>
       </View>
       <Card>
-        <View style={s.row}><Sparkles color={c.gold} size={24} /><Text style={s.sectionTitle}>응대 제안</Text></View>
+        <View style={s.row}><SoundWaveIcon color={c.gold} size={24} /><Text style={s.sectionTitle}>응대 제안</Text></View>
         {suggestions.map((item, index) => <View key={item} style={s.briefSuggestion}><View style={s.briefNumber}><Text style={s.briefNumberText}>{index + 1}</Text></View><Text style={s.body}>{item}</Text></View>)}
       </Card>
       <Card>
