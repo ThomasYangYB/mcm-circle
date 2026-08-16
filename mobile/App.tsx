@@ -1970,7 +1970,7 @@ const s = StyleSheet.create({
     gap: 12,
     backgroundColor: c.ink,
   },
-  headerHome: { height: 110, paddingHorizontal: 4 },
+  headerHome: { height: 92, paddingHorizontal: 4 },
   headerMark: {
     width: 42,
     height: 42,
@@ -1981,10 +1981,11 @@ const s = StyleSheet.create({
   },
   // 헤더 높이를 줄이는 대신 로고가 세로 공간을 더 채우도록 한다.
   headerLogoMark: { width: 186, height: 64, backgroundColor: "transparent" },
-  headerHomeMark: { width: 340, height: 106 },
+  // 로고 원본 비율(1820:650)과 맞춰 letterboxing 없이 렌더링한다.
+  headerHomeMark: { width: 232, height: 83 },
   headerLogo: { width: 180, height: 64 },
-  // 휴대폰 홈: 큰 로고의 보이는 왼쪽 끝을 본문 시작선으로 보정한다.
-  headerHomeLogo: { width: 340, height: 106, marginLeft: -55 },
+  // 휴대폰 홈: 큰 로고의 보이는 왼쪽 끝을 본문 시작선과 맞춘다.
+  headerHomeLogo: { width: 232, height: 83, marginLeft: 4 },
   headerMarkText: { color: c.champagne, fontFamily: "Pretendard-Bold", fontWeight: "900", fontSize: 30, lineHeight: 34 },
   headerKicker: {
     color: c.champagne,
