@@ -450,7 +450,7 @@ function Login() {
             numberOfLines={isTablet ? undefined : 1}
             adjustsFontSizeToFit={!isTablet}
             minimumFontScale={0.5}
-            style={s.darkBody}
+            style={[s.darkBody, s.loginHeroBody]}
           >
             {isTablet ? "방문·상담·구매·케어 이력을\n하나의 프라이빗 여권에 담습니다." : "방문·상담·구매·케어 이력을 하나의 프라이빗 여권에 담습니다."}
           </Text>
@@ -472,7 +472,7 @@ function Login() {
               <Text style={[s.kicker, s.loginKicker]}>
                 {isCustomer ? "WELCOME BACK" : "CA WORKSTATION"}
               </Text>
-              <Text style={s.pageTitle}>
+              <Text style={[s.pageTitle, s.loginTitle]}>
                 {isCustomer ? "로그인" : "CA 로그인"}
               </Text>
             </View>
@@ -1689,10 +1689,9 @@ const s = StyleSheet.create({
   loginDarkTablet: { width: "42%", flexGrow: 0, flexShrink: 0, height: undefined, paddingTop: 68, paddingBottom: 52, paddingLeft: 46, paddingRight: 24 },
   loginInner: { flex: 1, maxWidth: 460, alignSelf: "center", width: "100%", justifyContent: "flex-start" },
   loginInnerTablet: { maxWidth: 420 },
-  // 휴대폰에서는 logo.png 파일 내부의 투명 여백까지 보정해, 실제 로고 픽셀이 제목 시작선과 맞는다.
-  // 태블릿은 별도 스타일을 유지한다.
-  // 휴대폰 로그인: 로고를 검정 히어로 영역의 가로 중앙에 배치한다.
-  loginLogo: { width: 326, height: 123, alignSelf: "center", marginLeft: 0, marginTop: 8 },
+  // 휴대폰에서도 logo-tight.png 파일 내부의 투명 여백까지 보정해, 실제 로고 픽셀 좌측 끝이
+  // 아래 제목/본문 텍스트의 좌측 시작선과 정확히 일직선이 되도록 왼쪽 정렬한다.
+  loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: -8, marginTop: 8 },
   // 실제 로고 픽셀은 잘리지 않는다.
   // 태블릿: 로그인 본문보다 로고가 안쪽으로 보이던 여백을 명확히 제거한다.
   loginLogoTablet: { width: 370, height: 142, alignSelf: "flex-start", marginLeft: -60, marginTop: 0 },
@@ -1717,15 +1716,20 @@ const s = StyleSheet.create({
     alignSelf: "center",
     gap: 20,
   },
-  authField: { gap: 11, marginTop: 5 },
-  passwordField: { marginTop: 20 },
+  authField: { gap: 10, marginTop: 5 },
+  passwordField: { marginTop: 30 },
   loginButtonWrap: { marginTop: 34 },
   authTopRow: {
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
   },
-  loginIntro: { marginBottom: 24 },
+  loginIntro: { marginBottom: 34 },
+  // 로그인 히어로: 헤드라인과 설명 문구 사이를 조금 더 벌려 위계를 분명히 한다.
+  loginHeroBody: { marginTop: 12 },
+  // 로그인 타이틀: WELCOME BACK 배지와 더 가깝게 붙여 하나의 그룹으로 보이게 하고,
+  // "로그인"은 살짝 더 크게 강조한다.
+  loginTitle: { fontSize: 28, lineHeight: 36 },
   roleSwitch: {
     minWidth: 58,
     height: 44,
@@ -1786,7 +1790,7 @@ const s = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: 4,
   },
-  loginKicker: { marginBottom: 12 },
+  loginKicker: { marginBottom: 4 },
   signupKicker: { color: c.gold, fontFamily: "Pretendard-Bold", fontSize: 13, fontWeight: "800", letterSpacing: 1.25, marginBottom: -8 },
   profileKicker: { color: c.gold, fontFamily: "Pretendard-Bold", fontSize: 14, fontWeight: "800", letterSpacing: 1.4, marginBottom: -12 },
   darkKicker: {
