@@ -1526,7 +1526,7 @@ function Brief() {
         }
         try {
           const response = await caApi.regenerateCustomerInsights(customer.id);
-          setBrief(response.data.brief);
+          setBrief(response.brief);
           Alert.alert("AI 브리프 갱신 완료", "최신 상담 기록과 이전 여정을 반영했습니다.");
         } catch {
           Alert.alert("갱신 실패", "네트워크를 확인한 뒤 다시 시도해 주세요.");
@@ -1610,7 +1610,7 @@ function IssueStamp() {
         <View style={s.issueInfoColumn}><View style={[s.card, s.issueInfoCard]}><Text style={[s.label, s.issueInfoLabel]}>발급 대상 고객</Text><Text style={[s.cardTitle, s.issueInfoTitle]}>{customer.name} · {customer.membershipTier === "VIP" ? "VIP 고객" : "일반 고객"}</Text><View style={s.issueDetailLine}><MapPin size={16} color={c.gold} /><View><Text style={[s.caption, s.issueInfoCaption]}>방문 매장</Text><Text style={[s.cardTitle, s.issueInfoTitle]}>{currentStore}</Text></View></View><View style={s.issueDetailLine}><View><Text style={[s.caption, s.issueInfoCaption]}>담당 CA</Text><Text style={[s.cardTitle, s.issueInfoTitle]}>이현우 어드바이저</Text></View></View><View><Text style={[s.caption, s.issueInfoCaption]}>발급 일시</Text><Text style={[s.cardTitle, s.issueInfoTitle]}>{new Date().toLocaleString("ko-KR")}</Text></View></View></View>
       </View>
       <View style={[s.issueActions, !isTablet && s.issueActionsMobile]}>
-        <View style={[s.issueAction, s.issueVisualAction]}><Button onPress={() => { if (verified) { addStamp(customer.id, "visit"); n.navigate("StampSuccess"); } else { setVerified(true); } }} icon={<Stamp color={c.paper} size={22} />}>{verified ? "방문 스탬프 발급" : "중복 발급 여부 확인"}</Button></View>
+        <View style={[s.issueAction, s.issueVisualAction]}><Button onPress={async () => { if (!verified) { setVerified(true); return; } try { if (hasConnectedBackend()) await caApi.issueVisitStamp(customer.id, currentStore); addStamp(customer.id, "visit"); n.navigate("StampSuccess"); } catch { Alert.alert("발급 실패", "네트워크를 확인한 뒤 다시 시도해 주세요."); } }} icon={<Stamp color={c.paper} size={22} />}>{verified ? "방문 스탬프 발급" : "중복 발급 여부 확인"}</Button></View>
         <View style={[s.issueAction, s.issueInfoAction]}><Button secondary onPress={() => n.goBack()}>취소</Button></View>
       </View>
     </Screen>

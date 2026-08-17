@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { AIBrief, ConsultationNote, Customer, ProductRecommendation } from '../src/types';
+import type { AIBrief, ConsultationNote, ProductRecommendation } from '../src/types';
 import type { AIBriefResponse, ApiEnvelope, AuthTokens, ConsultationRecordRequest, ConsultationRecordResponse, CustomerProfileResponse, CustomerSearchItem, PageEnvelope, StampResponse, VisitResponse } from '../src/api/contracts';
 
 const FALLBACK_API_URL = 'https://api.example.com';
@@ -12,6 +12,37 @@ const unwrap = <T>(response: { data: ApiEnvelope<T> }): T => { if (!response.dat
 
 export type ConsultationDraft = Pick<ConsultationNote, 'visitPurpose' | 'content' | 'styleChange' | 'cautionUpdate' | 'consentConfirmed'> & { storeName: string; caName: string };
 export type AIInsightResponse = { brief: AIBrief; recommendations: ProductRecommendation[] };
+
+// The server owns a visit. Keeping the id here ensures a consultation, stamp,
+// and AI brief generated during one CA session are connected to that same visit.
+const activeVisitIds = new Map<string, number>();
+
+const toBrief = (customerId: string, response: AIBriefResponse): AIBrief => ({
+  customerId,
+  summary: response.summary,
+  suggestedApproach: response.suggestedApproach ?? response.summary,
+  basis: response.basis ?? [],
+  generatedAt: response.generatedAt,
+  dataSource: ['Visit', 'VisitRecord', 'Stamp', 'AI Brief API'],
+  cautions: response.cautions ?? [],
+  mode: 'LIVE AI',
+});
+
+const ensureActiveVisit = async (customerId: string) => {
+  const inMemoryVisit = activeVisitIds.get(customerId);
+  if (inMemoryVisit) return inMemoryVisit;
+
+  const visits = await visitApi.listForCustomer(customerId);
+  const latestVisit = visits.items[0];
+  if (latestVisit?.visitId) {
+    activeVisitIds.set(customerId, latestVisit.visitId);
+    return latestVisit.visitId;
+  }
+
+  const createdVisit = await visitApi.create(customerId);
+  activeVisitIds.set(customerId, createdVisit.visitId);
+  return createdVisit.visitId;
+};
 
 // 로그인 응답을 받아 토큰만 설정한다. 화면 상태/저장은 Provider가 맡는다.
 export const authApi = {
@@ -34,9 +65,6 @@ export const customerApi = {
   getById: (customerId: string) => api.get<ApiEnvelope<CustomerProfileResponse>>(`/api/v1/customers/${customerId}`).then(unwrap),
   getByQr: (qrToken: string) => api.get<ApiEnvelope<CustomerProfileResponse>>(`/api/v1/customers/by-qr/${qrToken}`).then(unwrap),
   search: (keyword: string, page = 0, size = 20) => api.get<PageEnvelope<CustomerSearchItem>>('/api/v1/customers/search', { params: { keyword, page, size } }).then(unwrap),
-  // 기존 화면이 목업 모드에서 계속 작동하도록 남겨둔 호환용 별칭이다.
-  getProfile: (customerId: string) => api.get<Customer>(`/api/v1/customers/${customerId}`),
-  getRecommendations: (customerId: string) => api.get<ProductRecommendation[]>(`/api/v1/customers/${customerId}/recommendations`),
 };
 
 export const visitApi = {
@@ -57,9 +85,27 @@ export const aiBriefApi = {
 };
 
 export const caApi = {
-  // 현재 화면은 로컬 저장을 우선으로 동작한다. API 연결 시 visitApi/aiBriefApi로 전환한다.
-  getTodayBrief: (customerId: string) => api.get<AIBrief>(`/api/v1/customers/${customerId}/ai-briefs/latest`),
-  createConsultation: (customerId: string, draft: ConsultationDraft) => api.post<ConsultationNote>(`/api/v1/customers/${customerId}/consultations`, draft),
-  regenerateCustomerInsights: (customerId: string) => api.post<AIInsightResponse>(`/api/v1/customers/${customerId}/ai-insights/regenerate`),
-  issueVisitStamp: (customerId: string, storeName: string) => api.post(`/api/v1/customers/${customerId}/journey-stamps`, { type: 'visit', storeName }),
+  getTodayBrief: async (customerId: string) => {
+    const visitId = await ensureActiveVisit(customerId);
+    return toBrief(customerId, await aiBriefApi.latest(customerId, visitId));
+  },
+  createConsultation: async (customerId: string, draft: ConsultationDraft) => {
+    const visitId = await ensureActiveVisit(customerId);
+    return visitApi.createRecord(visitId, {
+      visitPurpose: draft.visitPurpose,
+      content: draft.content,
+      styleChangeNote: draft.styleChange || undefined,
+      cautionNote: draft.cautionUpdate || undefined,
+      consentConfirmed: draft.consentConfirmed,
+    });
+  },
+  regenerateCustomerInsights: async (customerId: string): Promise<AIInsightResponse> => {
+    const visitId = await ensureActiveVisit(customerId);
+    const response = await aiBriefApi.generate(customerId, visitId);
+    return { brief: toBrief(customerId, response), recommendations: [] };
+  },
+  issueVisitStamp: async (customerId: string, _storeName: string) => {
+    const visitId = await ensureActiveVisit(customerId);
+    return visitApi.issueStamp(visitId);
+  },
 };
