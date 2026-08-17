@@ -1793,7 +1793,7 @@ const s = StyleSheet.create({
   // 실제 로고 픽셀은 잘리지 않는다.
   // 태블릿: 로그인 본문보다 로고가 안쪽으로 보이던 여백을 명확히 제거한다.
   // 태블릿 로그인: 이전처럼 여백을 두어 로고가 왼쪽에 붙지 않게 한다.
-  loginLogoTablet: { width: 370, height: 142, alignSelf: "flex-start", marginLeft: 40, marginTop: 0 },
+  loginLogoTablet: { width: 370, height: 142, alignSelf: "flex-start", marginLeft: -9, marginTop: 0 },
   // 로고와 Journey Passport 배지/본문은 서로 충분히 떨어뜨린다.
   loginHeroSpacer: { height: 30 },
   loginHeroSpacerTablet: { height: 30 },
