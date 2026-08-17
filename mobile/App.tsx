@@ -1497,7 +1497,7 @@ function Brief() {
         <Text style={s.body}>{customer.name} 님 · {customer.stamps[0]?.storeName ?? "국내 MCM 매장"} · 실제 여정 기록 기반</Text>
       </View>
       <View style={s.briefHero}>
-        <View style={s.row}><View style={s.briefIcon}><SoundWaveIcon color={c.ink} size={24} /></View><View style={{ flex: 1 }}><Text style={s.passportName}>상담 맥락 요약</Text><Text style={s.darkBody}>데모 데이터 기반 생성</Text></View><Pill tone="forest">DEMO AI</Pill></View>
+        <View style={s.row}><View style={s.briefIcon}><SoundWaveIcon color={c.ink} size={30} /></View><View style={{ flex: 1 }}><Text style={s.passportName}>상담 맥락 요약</Text><Text style={s.darkBody}>데모 데이터 기반 생성</Text></View><Pill tone="forest">DEMO AI</Pill></View>
         <Text style={s.briefSummary}>{brief?.summary ?? "고객의 최근 여정을 분석하는 중입니다."}</Text>
       </View>
       <Card>
@@ -1786,7 +1786,8 @@ const s = StyleSheet.create({
   loginLogo: { width: 326, height: 123, alignSelf: "flex-start", marginLeft: -8, marginTop: 8 },
   // 실제 로고 픽셀은 잘리지 않는다.
   // 태블릿: 로그인 본문보다 로고가 안쪽으로 보이던 여백을 명확히 제거한다.
-  loginLogoTablet: { width: 370, height: 142, alignSelf: "flex-start", marginLeft: -60, marginTop: 0 },
+  // 태블릿 로그인: 이전처럼 여백을 두어 로고가 왼쪽에 붙지 않게 한다.
+  loginLogoTablet: { width: 370, height: 142, alignSelf: "flex-start", marginLeft: 40, marginTop: 0 },
   // 로고와 Journey Passport 배지/본문은 서로 충분히 떨어뜨린다.
   loginHeroSpacer: { height: 30 },
   loginHeroSpacerTablet: { height: 30 },
@@ -2199,7 +2200,7 @@ const s = StyleSheet.create({
   consultationMemoFollow: { color: c.muted, fontFamily: "Pretendard", fontSize: 13, lineHeight: 20 },
   briefHeading: { gap: 7, paddingTop: 8, paddingBottom: 8 },
   briefHero: { backgroundColor: c.ink, padding: 28, gap: 24 },
-  briefIcon: { width: 54, height: 54, borderRadius: 12, backgroundColor: c.paper, alignItems: "center", justifyContent: "center" },
+  briefIcon: { width: 58, height: 58, borderRadius: 12, backgroundColor: c.paper, alignItems: "center", justifyContent: "center" },
   briefSummary: { color: c.paper, fontFamily: "Pretendard-SemiBold", fontSize: 13, lineHeight: 21, fontWeight: "600" },
   briefSuggestion: { flexDirection: "row", alignItems: "center", gap: 14 },
   briefNumber: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center", backgroundColor: "#F5E5B8" },
