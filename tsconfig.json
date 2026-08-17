@@ -21,6 +21,7 @@
   "include": [
     "App.tsx",
     "mobile",
+    "src/data",
     "src/mock",
     "src/types",
     "nativewind-env.d.ts"
