@@ -383,15 +383,17 @@ function Card({
   children,
   dark = false,
   delay = 0,
+  style,
 }: {
   children: React.ReactNode;
   dark?: boolean;
   delay?: number;
+  style?: any;
 }) {
   return (
     <Animated.View
       entering={FadeInUp.duration(420).delay(delay).easing(Easing.out(Easing.cubic))}
-      style={[s.card, dark && s.darkCard]}
+      style={[s.card, dark && s.darkCard, style]}
     >
       {children}
     </Animated.View>
@@ -874,7 +876,7 @@ function ProductList({ products }: { products: typeof MOCK_PRODUCTS }) {
           key={p.productId}
           style={isTablet ? s.productGridItem : undefined}
         >
-          <Card delay={i * 70}>
+          <Card delay={i * 70} style={isTablet ? s.productCardTabletShell : undefined}>
             <View style={[s.row, isTablet && s.productCardTablet]}>
               <ProductImage
                 uri={p.imageUrl}
@@ -2017,7 +2019,8 @@ const s = StyleSheet.create({
   productList: { gap: 12 },
   productGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   productGridItem: { width: "32%" },
-  productCardTablet: { flexDirection: "column", alignItems: "stretch" },
+  productCardTabletShell: { height: 340 },
+  productCardTablet: { flex: 1, flexDirection: "column", alignItems: "stretch", justifyContent: "space-between" },
   productImage: {
     width: 70,
     height: 70,
