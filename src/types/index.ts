@@ -42,6 +42,8 @@ export interface Customer {
   id: string;
   name: string;
   customerNo: string;
+  // API의 QR 조회는 customerNo가 아니라 이 토큰을 사용한다.
+  qrToken?: string;
   phoneLast4: string; // Masked to last 4 digits per privacy principle
   membershipTier: MembershipTier;
   points: number;
@@ -77,7 +79,9 @@ export interface ProductRecommendation {
   tone: 'cognac' | 'black' | 'champagne';
   reason: string;
   category: string;
-  imageUrl: string;
+  // string은 API URL, number는 Expo에 번들된 전달 이미지(require)다.
+  imageUrl: string | number;
+  recommendable?: boolean;
 }
 
 export type UserRole = 'customer' | 'ca';

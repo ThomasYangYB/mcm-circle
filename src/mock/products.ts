@@ -1,64 +1,42 @@
 import { ProductRecommendation } from '../types';
 
-export const MOCK_PRODUCTS: ProductRecommendation[] = [
-  {
-    productId: 'mcm-prod-01',
-    productName: 'M Stark 비세토스 백팩',
-    variant: 'Cognac / Medium',
-    price: 1890000,
-    tone: 'cognac',
-    reason: '고객의 시그니처 코냑 비세토스 선호 & 글로벌 여행 라이프스타일에 부합',
-    category: 'Backpacks',
-    imageUrl: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    productId: 'mcm-prod-02',
-    productName: 'Aren 비세토스 메신저 백',
-    variant: 'Cognac / Medium',
-    price: 1090000,
-    tone: 'black',
-    reason: '비즈니스 출장 및 미니멀 블랙 에센셜 스티칭 아이템 추천',
-    category: 'Totes',
-    imageUrl: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    productId: 'mcm-prod-03',
-    productName: 'Mini Tracy 비세토스 크로스바디',
-    variant: 'Cognac / Mini',
-    price: 830000,
-    tone: 'champagne',
-    reason: 'VIP 파티 & 프라이빗 이브닝 이벤트 참석용 샴페인 톤 포인트',
-    category: 'Crossbody',
-    imageUrl: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    productId: 'mcm-prod-04',
-    productName: 'Ottomar 비세토스 위켄더',
-    variant: 'Cognac / Small',
-    price: 1750000,
-    tone: 'cognac',
-    reason: '해외 매장 방문 이력 및 트래블 모빌리티 모티프 맞춤 큐레이션',
-    category: 'Travel',
-    imageUrl: 'https://images.unsplash.com/photo-1565084888279-aca607ecce0c?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    productId: 'mcm-prod-05',
-    productName: '비세토스 프루스튼 벨트백',
-    variant: 'Cognac / Small',
-    price: 890000,
-    tone: 'black',
-    reason: '최근 선물용 구매 관심 및 선물 포장 서비스 조화',
-    category: 'Small Leather Goods',
-    imageUrl: 'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    productId: 'mcm-prod-06',
-    productName: 'S–M 스타크 사이드 스터드 비세토스 백팩',
-    variant: 'Black / Small-Medium',
-    price: 1750000,
-    tone: 'champagne',
-    reason: '글로벌 VIP 트래블러 전용 리미티드 패스포트 에디션',
-    category: 'Luggage',
-    imageUrl: 'https://images.unsplash.com/photo-1581553680321-4fffae59febd?auto=format&fit=crop&w=600&q=80',
-  }
+// Backend products.json을 기준으로 한 로컬 폴백이다. API 연결 전에도 같은 상품/가격/사진을 보여 준다.
+const PRODUCT_IMAGES = [
+  require('../../assets/products/product-01.jpg'), require('../../assets/products/product-02.jpg'),
+  require('../../assets/products/product-03.jpg'), require('../../assets/products/product-04.jpg'),
+  require('../../assets/products/product-05.jpg'), require('../../assets/products/product-06.jpg'),
+  require('../../assets/products/product-07.jpg'), require('../../assets/products/product-08.jpg'),
+  require('../../assets/products/product-09.jpg'), require('../../assets/products/product-10.jpg'),
+  require('../../assets/products/product-11.jpg'), require('../../assets/products/product-12.jpg'),
+  require('../../assets/products/product-13.jpg'), require('../../assets/products/product-14.jpg'),
+  require('../../assets/products/product-15.jpg'), require('../../assets/products/product-16.jpg'),
+  require('../../assets/products/product-17.jpg'), require('../../assets/products/product-18.jpg'),
+  require('../../assets/products/product-19.jpg'),
 ];
+
+const SOURCE_PRODUCTS = [
+  ['bag001', 'Pina 비세토스 숄더백', '가방', 1690000, true], ['bag002', 'Stark 사이드 스터드 백팩', '가방', 2290000, true],
+  ['bag003', 'Rockstar 로렐 숄더백', '가방', 1550000, true], ['bag004', 'Fursten 비세토스 벨트백', '가방', 1450000, true],
+  ['bag005', 'New Liz 리버서블 쇼퍼', '가방', 1090000, true], ['bag006', 'Aren 모노그램 에코닐 보스턴백', '가방', 1090000, true],
+  ['bag007', 'Aren 레더 토트백', '가방', 990000, true], ['bag008', 'Aren 모노그램 에코닐 백팩', '가방', 1850000, true],
+  ['bag009', 'Aren 모노그램 에코닐 토트', '가방', 1350000, true], ['bag010', 'Aren 레더 백팩', '가방', 1450000, true],
+  ['acc001', '레더 로고 스카프 링', '액세서리', 330000, true], ['acc002', '하이브리드 실크 트윌리', '액세서리', 195000, true],
+  ['acc003', '모노그램 레더 롱 월렛', '액세서리', 390000, true], ['per001', '코스믹 펄 오 드 퍼퓸', '향수', 94000, true],
+  ['per002', '코코 베일 오 드 퍼퓸', '향수', 229000, true], ['per003', '블랙 머스크 오 드 퍼퓸', '향수', 210000, true],
+  ['tec001', '모노그램 에어팟 프로 케이스', '테크', 310000, true], ['tec002', '비세토스 Apple Watch 밴드', '테크', 290000, true],
+  ['tec003', 'MCM X CASETiFY 모노그램 iPhone 17 Pro 케이스', '테크', 239000, false],
+] as const;
+
+const TONES: ProductRecommendation['tone'][] = ['cognac', 'black', 'champagne'];
+
+export const MOCK_PRODUCTS: ProductRecommendation[] = SOURCE_PRODUCTS.map(
+  ([productId, productName, category, price, recommendable], index) => ({
+    productId, productName, category, price, recommendable,
+    variant: category === '가방' ? 'MCM Signature' : category,
+    tone: TONES[index % TONES.length],
+    reason: '고객님의 여정과 선호를 바탕으로 추천하는 MCM 제품입니다.',
+    imageUrl: PRODUCT_IMAGES[index],
+  }),
+);
+
+export const RECOMMENDABLE_PRODUCTS = MOCK_PRODUCTS.filter((product) => product.recommendable);

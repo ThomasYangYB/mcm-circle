@@ -60,9 +60,9 @@ import {
   X,
 } from "lucide-react-native";
 import { MOCK_CUSTOMERS } from "../src/mock/customers";
-import { MOCK_PRODUCTS } from "../src/mock/products";
+import { RECOMMENDABLE_PRODUCTS } from "../src/mock/products";
 import { MOCK_BRIEFS } from "../src/mock/briefs";
-import type { Customer, JourneyStamp, UserRole } from "../src/types";
+import type { Customer, JourneyStamp, ProductRecommendation, UserRole } from "../src/types";
 import { colors as c } from "./theme";
 import { caApi, hasConnectedBackend } from "./api";
 
@@ -91,6 +91,11 @@ type AppState = {
 const Ctx = createContext<AppState | null>(null);
 const useApp = () => useContext(Ctx)!;
 const storageKey = "mcm-mobile-customers";
+// 목업도 실 API와 동일하게 customerNo와 분리된 QR 토큰만 화면에 노출한다.
+const INITIAL_CUSTOMERS: Customer[] = MOCK_CUSTOMERS.map((customer) => ({
+  ...customer,
+  qrToken: customer.qrToken ?? `demo-qr-${customer.id}`,
+}));
 const BRAND_LOGO = require("../logo.png");
 // 화면 헤더용: 원본 PNG에 들어 있던 큰 투명 테두리를 제거한 버전이다.
 // 따라서 로고의 보이는 왼쪽 끝을 본문 시작선에 정확히 맞출 수 있다.
@@ -159,7 +164,7 @@ function Provider({ children }: { children: React.ReactNode }) {
     setRoleState("customer");
     setAuthScreen("login");
   };
-  const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
+  const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
   const [selected, select] = useState("cust-01");
   const [currentStore, setCurrentStore] = useState<StoreName>(
     "MCM 하우스 플래그십스토어",
@@ -182,6 +187,7 @@ function Provider({ children }: { children: React.ReactNode }) {
               "MCM 하우스 플래그십스토어";
             return {
               ...customer,
+              qrToken: customer.qrToken ?? `demo-qr-${customer.id}`,
               stamps,
               purchases: customer.purchases.map((purchase) => ({ ...purchase, storeName: purchase.storeName ?? storeFor("purchase", purchase.purchasedAt) })),
               careRecords: customer.careRecords.map((record) => ({ ...record, storeName: record.storeName ?? storeFor("care", record.date) })),
@@ -742,7 +748,7 @@ function CustomerHome() {
         contentContainerStyle={{ gap: stampGap }}
       />
       <SectionTitle title="고객 맞춤 추천 제품" action={() => n.navigate("Recommendations")} />
-      <ProductList products={MOCK_PRODUCTS.slice(0, 3)} />
+      <ProductList products={RECOMMENDABLE_PRODUCTS.slice(0, 3)} />
       <View style={s.homeActionList}>
         <Pressable onPress={() => n.navigate("Passport")} style={s.homeActionDark}>
           <BookOpen color={c.paper} size={24} />
@@ -765,7 +771,7 @@ function CustomerHome() {
               </Pressable>
             </View>
             <View style={s.fakeQr}>
-              <QRCode value={`mcm-private-circle://customer/${customer.customerNo}`} size={190} color={c.paper} backgroundColor={c.ink} />
+              <QRCode value={`mcm-private-circle://customer/${customer.qrToken ?? customer.customerNo}`} size={190} color={c.paper} backgroundColor={c.ink} />
             </View>
             <Text style={s.body}>
               매장 방문 시 담당 CA에게 이 QR을 보여주세요.
@@ -850,7 +856,7 @@ function StampCard({ item, compact = false, size }: { item: JourneyStamp; compac
   );
 }
 // 제품 이미지를 살짝 눌렀을 때만 아주 미세하게 확대되는, 상품이 주인공인 절제된 인터랙션이다.
-function ProductImage({ uri, style }: { uri: string; style: any }) {
+function ProductImage({ source, style }: { source: string | number; style: any }) {
   const scale = useSharedValue(1);
   const imageStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
   return (
@@ -862,11 +868,11 @@ function ProductImage({ uri, style }: { uri: string; style: any }) {
         scale.value = withTiming(1, { duration: 280, easing: Easing.out(Easing.quad) });
       }}
     >
-      <Animated.Image source={{ uri }} style={[style, imageStyle]} />
+      <Animated.Image source={typeof source === "number" ? source : { uri: source }} style={[style, imageStyle]} />
     </AnimatedPressable>
   );
 }
-function ProductList({ products }: { products: typeof MOCK_PRODUCTS }) {
+function ProductList({ products }: { products: ProductRecommendation[] }) {
   const { customer, toggleProduct } = useApp();
   const { isTablet } = useResponsive();
   return (
@@ -879,7 +885,7 @@ function ProductList({ products }: { products: typeof MOCK_PRODUCTS }) {
           <Card delay={i * 70} style={isTablet ? s.productCardTabletShell : undefined}>
             <View style={[s.row, isTablet && s.productCardTablet]}>
               <ProductImage
-                uri={p.imageUrl}
+                source={p.imageUrl}
                 style={[s.productImage, isTablet && s.productImageTablet]}
               />
               <View style={{ flex: 1 }}>
@@ -1065,7 +1071,7 @@ function Recommendations() {
     <Screen title="맞춤 추천" back>
       <Text style={s.pageTitle}>고객 맞춤 추천 제품</Text>
       <Text style={s.recommendationDescription}>고객님만을 위한 MCM의 추천 제품입니다.</Text>
-      <ProductList products={MOCK_PRODUCTS} />
+      <ProductList products={RECOMMENDABLE_PRODUCTS} />
     </Screen>
   );
 }
@@ -1154,7 +1160,7 @@ function Benefits() {
 }
 function Saved() {
   const { customer } = useApp();
-  const saved = MOCK_PRODUCTS.filter((x) =>
+  const saved = RECOMMENDABLE_PRODUCTS.filter((x) =>
     customer.savedProductIds.includes(x.productId),
   );
   return (
@@ -1535,7 +1541,7 @@ function CaRecommendations() {
       <Text style={s.body}>
         고객 선호와 상담 맥락을 토대로 제안할 제품 후보입니다.
       </Text>
-      <ProductList products={MOCK_PRODUCTS.slice(0, 3)} />
+      <ProductList products={RECOMMENDABLE_PRODUCTS.slice(0, 3)} />
     </Screen>
   );
 }
