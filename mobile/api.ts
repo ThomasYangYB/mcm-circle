@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { AIBrief, ConsultationNote, ProductRecommendation } from '../src/types';
-import type { AIBriefResponse, ApiEnvelope, AuthTokens, ConsultationRecordRequest, ConsultationRecordResponse, CustomerProfileResponse, CustomerSearchItem, PageEnvelope, StampResponse, VisitResponse } from '../src/api/contracts';
+import type { AIBriefResponse, ApiEnvelope, AuthTokens, ConsultationRecordRequest, ConsultationRecordResponse, CustomerProfileResponse, CustomerSearchItem, CustomerSignupRequest, PageEnvelope, StampResponse, VisitResponse } from '../src/api/contracts';
 
 const FALLBACK_API_URL = 'https://api.example.com';
 export const api = axios.create({ baseURL: process.env.EXPO_PUBLIC_API_URL ?? FALLBACK_API_URL, timeout: 10_000, headers: { 'Content-Type': 'application/json' } });
@@ -46,7 +46,7 @@ const ensureActiveVisit = async (customerId: string) => {
 
 // 로그인 응답을 받아 토큰만 설정한다. 화면 상태/저장은 Provider가 맡는다.
 export const authApi = {
-  customerSignup: (payload: Record<string, unknown>) => api.post<ApiEnvelope<CustomerProfileResponse>>('/api/v1/auth/customers/signup', payload).then(unwrap),
+  customerSignup: (payload: CustomerSignupRequest) => api.post<ApiEnvelope<CustomerProfileResponse>>('/api/v1/auth/customers/signup', payload).then(unwrap),
   customerLogin: async (emailOrPhone: string, password: string) => {
     const tokens = await api.post<ApiEnvelope<AuthTokens>>('/api/v1/auth/customers/login', { emailOrPhone, password }).then(unwrap);
     setAccessToken(tokens.accessToken);

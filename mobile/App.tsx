@@ -634,6 +634,44 @@ function Login() {
 }
 function SignUp() {
   const { setAuthScreen, setRole, select } = useApp();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const submit = async () => {
+    if (submitting) return;
+    if (!name.trim() || !email.trim() || !phone.trim() || !password.trim()) {
+      Alert.alert("확인 필요", "이름, 이메일, 휴대폰 번호, 비밀번호를 모두 입력해 주세요.");
+      return;
+    }
+    const digitsOnlyPhone = phone.replace(/\D/g, "");
+    if (!/^01[0-9]{8,9}$/.test(digitsOnlyPhone)) {
+      Alert.alert("확인 필요", "휴대폰 번호 형식을 확인해 주세요. (예: 01012345678)");
+      return;
+    }
+    // 백엔드 URL이 아직 설정되지 않은 데모 환경에서는 이전과 동일하게 즉시 진입한다.
+    if (!hasConnectedBackend()) {
+      select("cust-01");
+      setRole("customer");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await authApi.customerSignup({
+        loginId: email.trim(),
+        password,
+        name: name.trim(),
+        phoneNumber: digitsOnlyPhone,
+      });
+      select("cust-01");
+      setRole("customer");
+    } catch {
+      Alert.alert("회원가입 실패", "입력하신 정보를 확인한 뒤 다시 시도해 주세요.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
   return (
     <SafeAreaView style={s.safe}>
       <StatusBar style="dark" />
@@ -658,20 +696,35 @@ function SignUp() {
             <Text style={s.label}>이름</Text>
             <TextInput
               style={s.textInput}
+              value={name}
+              onChangeText={setName}
               placeholder="이름을 입력하세요"
               placeholderTextColor={c.muted}
             />
             <Text style={s.label}>이메일</Text>
             <TextInput
               style={s.textInput}
+              value={email}
+              onChangeText={setEmail}
               placeholder="example@email.com"
               placeholderTextColor={c.muted}
               autoCapitalize="none"
               keyboardType="email-address"
             />
+            <Text style={s.label}>휴대폰 번호</Text>
+            <TextInput
+              style={s.textInput}
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="01012345678"
+              placeholderTextColor={c.muted}
+              keyboardType="phone-pad"
+            />
             <Text style={s.label}>비밀번호</Text>
             <TextInput
               style={s.textInput}
+              value={password}
+              onChangeText={setPassword}
               placeholder="8자 이상 입력하세요"
               placeholderTextColor={c.muted}
               secureTextEntry
@@ -681,10 +734,7 @@ function SignUp() {
             </Text>
           </Card>
           <Button
-            onPress={() => {
-              select("cust-01");
-              setRole("customer");
-            }}
+            onPress={submit}
           >
             회원가입 완료
           </Button>

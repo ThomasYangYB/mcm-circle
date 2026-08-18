@@ -4,6 +4,8 @@ export type PageEnvelope<T> = ApiEnvelope<{ items: T[]; page: number; size: numb
 // 직원 로그인 응답에는 caId, storeId, role=CA가 함께 내려온다(스펙 3장).
 export type AuthTokens = { accessToken: string; refreshToken?: string; caId?: number; storeId?: number; storeName?: string; role?: string };
 export type CustomerProfileResponse = { customerId: string; customerNo: string; customerName: string; phoneNumber?: string; qrToken: string; membershipGrade?: string; joinedAt?: string; profileImageUrl?: string };
+// 회원가입 요청 필드명은 스펙 3장 예시를 그대로 따른다(loginId/phoneNumber, 하이픈 없는 숫자 문자열).
+export type CustomerSignupRequest = { loginId: string; password: string; name: string; phoneNumber: string };
 export type CustomerSearchItem = { customerId: string; customerNo: string; customerName: string; phoneNumber?: string; membershipGrade?: string };
 export type VisitResponse = { visitId: number; customerId: string; customerName: string; storeId: string; storeName: string; visitedAt: string };
 /** Server request names are deliberately separate from local UI field names. */
