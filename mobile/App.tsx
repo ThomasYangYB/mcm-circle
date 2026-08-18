@@ -64,7 +64,7 @@ import { RECOMMENDABLE_PRODUCTS } from "../src/mock/products";
 import { MOCK_BRIEFS } from "../src/mock/briefs";
 import type { Customer, JourneyStamp, ProductRecommendation, UserRole } from "../src/types";
 import { colors as c } from "./theme";
-import { caApi, hasConnectedBackend } from "./api";
+import { authApi, caApi, hasConnectedBackend } from "./api";
 
 type AuthScreen = "login" | "signup";
 type StoreName = keyof typeof STORE_STAMP_IMAGES;
@@ -500,9 +500,31 @@ function Login() {
   const { setRole, select, customers, setAuthScreen } = useApp();
   const { isTablet, horizontalPadding } = useResponsive();
   const [role, choose] = useState<UserRole>("customer");
-  const enter = () => {
-    setRole(role);
-    select("cust-01");
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const enter = async () => {
+    if (submitting) return;
+    // 백엔드 URL이 아직 설정되지 않은 데모 환경에서는 이전과 동일하게 즉시 진입한다.
+    if (!hasConnectedBackend()) {
+      setRole(role);
+      select("cust-01");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      if (role === "customer") {
+        await authApi.customerLogin(identifier, password);
+      } else {
+        await authApi.employeeLogin(identifier, password);
+      }
+      setRole(role);
+      select("cust-01");
+    } catch {
+      Alert.alert("로그인 실패", "아이디 또는 비밀번호를 확인한 뒤 다시 시도해 주세요.");
+    } finally {
+      setSubmitting(false);
+    }
   };
   const isCustomer = role === "customer";
   return (
@@ -554,7 +576,11 @@ function Login() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="CA 로그인 전환"
-              onPress={() => choose(isCustomer ? "ca" : "customer")}
+              onPress={() => {
+                choose(isCustomer ? "ca" : "customer");
+                setIdentifier("");
+                setPassword("");
+              }}
               style={[s.roleSwitch, !isCustomer && s.roleSwitchActive]}
             >
               <Smartphone size={20} color={!isCustomer ? c.paper : c.ink} />
@@ -577,11 +603,11 @@ function Login() {
           </View>
           <View style={s.authField}>
             <Text style={s.label}>{isCustomer ? "이메일 또는 휴대폰 번호" : "담당 CA 사번"}</Text>
-            <TextInput style={s.textInput} placeholder={isCustomer ? "example@email.com" : "CA-1092"} placeholderTextColor={c.muted} autoCapitalize="none" />
+            <TextInput style={s.textInput} value={identifier} onChangeText={setIdentifier} placeholder={isCustomer ? "example@email.com" : "CA-1092"} placeholderTextColor={c.muted} autoCapitalize="none" />
           </View>
           <View style={[s.authField, s.passwordField]}>
             <Text style={s.label}>비밀번호</Text>
-            <TextInput style={s.textInput} placeholder="비밀번호를 입력하세요" placeholderTextColor={c.muted} secureTextEntry />
+            <TextInput style={s.textInput} value={password} onChangeText={setPassword} placeholder="비밀번호를 입력하세요" placeholderTextColor={c.muted} secureTextEntry />
           </View>
           <View style={s.loginButtonWrap}>
             <Button onPress={enter} icon={<ChevronRight color={c.paper} size={24} />}>

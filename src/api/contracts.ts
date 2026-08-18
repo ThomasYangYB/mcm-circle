@@ -1,7 +1,8 @@
 /** Backend handoff API contract (frontend-api-spec.html). */
 export type ApiEnvelope<T> = { success: boolean; data: T; message?: string };
 export type PageEnvelope<T> = ApiEnvelope<{ items: T[]; page: number; size: number; totalElements: number; totalPages: number; hasNext: boolean }>;
-export type AuthTokens = { accessToken: string; refreshToken?: string };
+// 직원 로그인 응답에는 caId, storeId, role=CA가 함께 내려온다(스펙 3장).
+export type AuthTokens = { accessToken: string; refreshToken?: string; caId?: number; storeId?: number; storeName?: string; role?: string };
 export type CustomerProfileResponse = { customerId: string; customerNo: string; customerName: string; phoneNumber?: string; qrToken: string; membershipGrade?: string; joinedAt?: string; profileImageUrl?: string };
 export type CustomerSearchItem = { customerId: string; customerNo: string; customerName: string; phoneNumber?: string; membershipGrade?: string };
 export type VisitResponse = { visitId: number; customerId: string; customerName: string; storeId: string; storeName: string; visitedAt: string };
